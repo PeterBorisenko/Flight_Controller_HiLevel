@@ -11,6 +11,7 @@ void prepareSystem()
 {
     WDTCSR|= (1 << WDE)|(1 << WDIE);
     //WDTCSR|=(0b111 << WDP0);
+	//initOSC();
     setPowerReduction();
 }
 
