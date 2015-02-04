@@ -5,7 +5,7 @@
  * Created: 12/7/2014 1:07:44 AM
  *  Author: Disgust
  */ 
-
+// TODO: Add ACK/NACK Support
 /*
  * \brief Initializes the I2C communication peripheral.
  *
@@ -15,7 +15,7 @@
  *                  Example: 1 - if initialization was successful;
  *                           0 - if initialization was unsuccessful.
  */
-unsigned char TWI_Init(unsigned long clockFreq)
+unsigned char TWI_Init(unsigned long clockFreq) // TODO: Complete this Init function
 {
     unsigned char   status      = 1;
     unsigned long   pbFrequency = 80000000;
