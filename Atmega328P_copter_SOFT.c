@@ -22,7 +22,7 @@
 #include "Barometer/BMP085.h"
 //#include <Sonar/>
 #include "Compass/LSM303D.h"
-#include "GPS/GPS.h"
+#include "GPS/GPS_EM_506.h"
 #include "Proximity.h"
 //#include "RC/"
 
