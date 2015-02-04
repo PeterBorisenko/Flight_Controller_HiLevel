@@ -43,154 +43,8 @@ Revision 1-0-5 2013/10/23
  Corrects Mag Enable bug, Corrects missing BDU enable
 ******************************************************************************/
 
-#include "./Communication.h"
-#include "lsm303d.h"
-/* #include "lsm303d.h" */
-
-
-#define	I2C_AUTO_INCREMENT	(0x80)
-#define MS_TO_NS(x)		(x*1000000L)
-
-#define	ACC_G_MAX_POS		1495040	/** max positive value acc [ug] */
-#define	ACC_G_MAX_NEG		1495770	/** max negative value acc [ug] */
-#define	MAG_G_MAX_POS		983520	/** max positive value mag [ugauss] */
-#define	MAG_G_MAX_NEG		983040	/** max negative value mag [ugauss] */
-
-#define FUZZ			0
-#define FLAT			0
-
-/* Address registers */
-#define REG_WHOAMI_ADDR		(0x0F)	/** Who am i address register */
-#define REG_CNTRL0_ADDR		(0x1F)	/** CNTRL0 address register */
-#define REG_CNTRL1_ADDR		(0x20)	/** CNTRL1 address register */
-#define REG_CNTRL2_ADDR		(0x21)	/** CNTRL2 address register */
-#define REG_CNTRL3_ADDR		(0x22)	/** CNTRL3 address register */
-#define REG_CNTRL4_ADDR		(0x23)	/** CNTRL4 address register */
-#define REG_CNTRL5_ADDR		(0x24)	/** CNTRL5 address register */
-#define REG_CNTRL6_ADDR		(0x25)	/** CNTRL6 address register */
-#define REG_CNTRL7_ADDR		(0x26)	/** CNTRL7 address register */
-
-#define REG_ACC_DATA_ADDR	(0x28)	/** Acc. data low address register */
-#define REG_MAG_DATA_ADDR	(0x08)	/** Mag. data low address register */
-#define REG_TEMP_DATA_ADDR	(0x05)	/** Temp. data low address register */
-
-#define REG_GEN_MAG_ADDR	(0x12)	/** INT_CTRL_REG_M address register */
-#define INT_SRC_REG_M_ADDR	(0x13)	/** INT_SRC_REG_M address register */
-#define REG_GEN_MAG_THR_ADDR	(0x14)	/** INT_THS_L_M address register */
-#define MIG_THRESHOLD_ADDR_H	(0x15)	/** INT_THS_H_M address register */
-#define REG_GEN1_AXIS_ADDR	(0x30)	/** INT_GEN1_REG address register */
-#define INT_GEN1_SRC_ADDR	(0x31)	/** INT_GEN1_SRC address register */
-#define REG_GEN1_THR_ADDR	(0x32)	/** INT_GEN1_THS address register */
-#define REG_GEN1_DUR_ADDR	(0x33)	/** INT_GEN1_DUR address register */
-#define REG_GEN2_AXIS_ADDR	(0x34)	/** INT_GEN2_REG address register */
-#define INT_GEN2_SRC_ADDR	(0x35)	/** INT_GEN2_SRC address register */
-#define REG_GEN2_THR_ADDR	(0x36)	/** INT_GEN2_THS address register */
-#define REG_GEN2_DUR_ADDR	(0x37)	/** INT_GEN2_DUR address register */
-
-/* Sensitivity */
-#define SENSITIVITY_ACC_2G	60	/**	ug/LSB	*/
-#define SENSITIVITY_ACC_4G	120	/**	ug/LSB	*/
-#define SENSITIVITY_ACC_8G	240	/**	ug/LSB	*/
-#define SENSITIVITY_ACC_16G	730	/**	ug/LSB	*/
-
-#define SENSITIVITY_MAG_2G	80	/**	ugauss/LSB	*/
-#define SENSITIVITY_MAG_4G	160	/**	ugauss/LSB	*/
-#define SENSITIVITY_MAG_8G	320	/**	ugauss/LSB	*/
-#define SENSITIVITY_MAG_12G	480	/**	ugauss/LSB	*/
-
-/* ODR */
-#define ODR_ACC_MASK		(0XF0)	/* Mask for odr change on acc */
-#define LSM303D_ACC_ODR_OFF	(0x00)  /* Power down */
-#define LSM303D_ACC_ODR3_125	(0x10)  /* 3.25Hz output data rate */
-#define LSM303D_ACC_ODR6_25	(0x20)  /* 6.25Hz output data rate */
-#define LSM303D_ACC_ODR12_5	(0x30)  /* 12.5Hz output data rate */
-#define LSM303D_ACC_ODR25	(0x40)  /* 25Hz output data rate */
-#define LSM303D_ACC_ODR50	(0x50)  /* 50Hz output data rate */
-#define LSM303D_ACC_ODR100	(0x60)  /* 100Hz output data rate */
-#define LSM303D_ACC_ODR200	(0x70)  /* 200Hz output data rate */
-#define LSM303D_ACC_ODR400	(0x80)  /* 400Hz output data rate */
-#define LSM303D_ACC_ODR800	(0x90)  /* 800Hz output data rate */
-#define LSM303D_ACC_ODR1600	(0xA0)  /* 1600Hz output data rate */
-
-#define ODR_MAG_MASK		(0X1C)	/* Mask for odr change on mag */
-#define LSM303D_MAG_ODR3_125	(0x00)  /* 3.25Hz output data rate */
-#define LSM303D_MAG_ODR6_25	(0x04)  /* 6.25Hz output data rate */
-#define LSM303D_MAG_ODR12_5	(0x08)  /* 12.5Hz output data rate */
-#define LSM303D_MAG_ODR25	(0x0C)  /* 25Hz output data rate */
-#define LSM303D_MAG_ODR50	(0x10)  /* 50Hz output data rate */
-#define LSM303D_MAG_ODR100	(0x14)  /* 100Hz output data rate */
-
-/* Magnetic sensor mode */
-#define MSMS_MASK		(0x03)	/* Mask magnetic sensor mode */
-#define POWEROFF_MAG		(0x02)	/* Power Down */
-#define CONTINUOS_CONVERSION	(0x00)	/* Continuos Conversion */
-
-/* Default values loaded in probe function */
-#define WHOIAM_VALUE		(0x49)	/** Who Am I default value */
-#define REG_DEF_CNTRL0		(0x00)	/** CNTRL0 default value */
-#define REG_DEF_CNTRL1		(0x0F)	/** CNTRL1 default value */
-#define REG_DEF_CNTRL2		(0x00)	/** CNTRL2 default value */
-#define REG_DEF_CNTRL3		(0x00)	/** CNTRL3 default value */
-#define REG_DEF_CNTRL4		(0x00)	/** CNTRL4 default value */
-#define REG_DEF_CNTRL5		(0x18)	/** CNTRL5 default value */
-#define REG_DEF_CNTRL6		(0x20)	/** CNTRL6 default value */
-#define REG_DEF_CNTRL7		(0x02)	/** CNTRL7 default value */
-
-#define REG_DEF_INT_CNTRL_MAG	(0x00)	/** INT_CTRL_REG_M default value */
-#define REG_DEF_INT_GEN1	(0x00)	/** INT_GEN1_REG default value */
-#define REG_DEF_INT_GEN2	(0x00)	/** INT_GEN2_REG default value */
-#define REG_DEF_IIG1_DURATION	(0x00)	/** INT_GEN1_DUR default value */
-#define REG_DEF_IIG2_DURATION	(0x00)	/** INT_GEN2_DUR default value */
-#define REG_DEF_IIG1_THRESHOLD	(0x00)	/** INT_GEN1_THS default value */
-#define REG_DEF_IIG2_THRESHOLD	(0x00)	/** INT_GEN2_THS default value */
-#define REG_DEF_MIG_THRESHOLD_L	(0x00)	/** INT_THS_L_M default value */
-#define REG_DEF_MIG_THRESHOLD_H	(0x00)	/** INT_THS_H_M default value */
-
-#define REG_DEF_ALL_ZEROS	(0x00)
-
-/* Accelerometer Filter */
-#define LSM303D_ACC_FILTER_MASK	(0xC0)	/* Mask for filter band change on acc */
-#define FILTER_773		773	/* Anti-Aliasing 773 Hz */
-#define FILTER_362		362	/* Anti-Aliasing 362 Hz */
-#define FILTER_194		194	/* Anti-Aliasing 194 Hz */
-#define FILTER_50		50	/* Anti-Aliasing 50 Hz */
-
-/* Temperature */
-#define TEMP_MASK		(0x80)	/* Mask for temperature change */
-#define TEMP_ON			(0x80)	/* Enable temperature */
-#define TEMP_OFF		(0x00)	/* Disable temperature */
-#define TEMP_SENSITIVITY	8	/* Sensitivity temperature */
-#define OFFSET_TEMP		25	/* Offset temperature */
-#define NDTEMP			1000	/* Not Available temperature */
-
-/* Interrupt */
-#define GEN1_PIN1_MASK		(0x20)
-#define GEN1_PIN2_MASK		(0x40)
-#define GEN2_PIN1_MASK		(0x10)
-#define GEN2_PIN2_MASK		(0x20)
-#define GEN_MAG_PIN1_MASK	(0x08)
-#define GEN_MAG_PIN2_MASK	(0x10)
-#define GEN_MAG_EN_MASK		(0x01)
-#define MAX_DUR_TH		127
-#define MAX_TH_MAG		131071
-#define GEN_X_HIGH_MASK		(0x02)
-#define GEN_X_LOW_MASK		(0x01)
-#define GEN_Y_HIGH_MASK		(0x08)
-#define GEN_Y_LOW_MASK		(0x04)
-#define GEN_Z_HIGH_MASK		(0x20)
-#define GEN_Z_LOW_MASK		(0x10)
-#define GEN_X_MAG_MASK		(0x80)
-#define GEN_Y_MAG_MASK		(0x40)
-#define GEN_Z_MAG_MASK		(0x20)
-
-#define GEN1_AND_OR_MASK	(0x80)
-#define GEN2_AND_OR_MASK	(0x83)
-
-#define INT_PIN_CONF_MASK	(0x10)
-#define INT_POLARITY_MASK	(0x80)
-
-#define to_dev(obj) container_of(obj, struct device, kobj)
-#define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
+#include "../Communication.h"
+#include "LSM303D.h"
 
 static struct kobject *acc_kobj;
 static struct kobject *mag_kobj;
@@ -198,8 +52,8 @@ static struct kobject *mag_kobj;
 struct workqueue_struct *lsm303d_workqueue = 0;
 
 struct {
-	unsigned int cutoff_us;
-	u8 value;
+	uint32_t cutoff_us;
+	uint8_t value;
 } lsm303d_acc_odr_table[] = {
 		{   1, LSM303D_ACC_ODR800  },
 		{   2, LSM303D_ACC_ODR400  },
@@ -213,8 +67,8 @@ struct {
 };
 
 struct {
-	unsigned int cutoff_us;
-	u8 value;
+	uint32_t cutoff_us;
+	uint8_t value;
 } lsm303d_mag_odr_table[] = {
 		{  10, LSM303D_MAG_ODR100  },
 		{  20, LSM303D_MAG_ODR50   },
@@ -225,14 +79,14 @@ struct {
 };
 
 struct interrupt_enable {
-	atomic_t enable;
-	u8 address;
-	u8 mask;
+	uint8_t enable;
+	uint8_t address;
+	uint8_t mask;
 };
 
 struct interrupt_value {
-	int value;
-	u8 address;
+	int32_t value;
+	uint8_t address;
 };
 
 struct lsm303d_interrupt {
@@ -281,23 +135,23 @@ struct lsm303d_status {
 	/* hw_working=-1 means not tested yet */
 	int hw_working;
 
-	atomic_t enabled_acc;
-	atomic_t enabled_mag;
-	atomic_t enabled_temp;
+	uint8_t enabled_acc;
+	uint8_t enabled_mag;
+	uint8_t enabled_temp;
 
-	int temp_value_dec;
-	unsigned int temp_value_flo;
+	int32_t temp_value_dec;
+	uint32_t temp_value_flo;
 
-	int on_before_suspend;
-	int use_smbus;
+	int32_t on_before_suspend;
+	int32_t use_smbus;
 
-	u16 sensitivity_acc;
-	u16 sensitivity_mag;
+	uint16_t sensitivity_acc;
+	uint16_t sensitivity_mag;
 
-	int irq1;
+	int32_t irq1;
 	struct work_struct irq1_work;
 	struct workqueue_struct *irq1_work_queue;
-	int irq2;
+	int32_t irq2;
 	struct work_struct irq2_work;
 	struct workqueue_struct *irq2_work_queue;
 };
@@ -328,14 +182,14 @@ static const struct lsm303d_mag_platform_data default_lsm303d_mag_pdata = {
 };
 
 struct reg_rw {
-	u8 address;
-	u8 default_value;
-	u8 resume_value;
+	uint8_t address;
+	uint8_t default_value;
+	uint8_t resume_value;
 };
 
 struct reg_r {
-	u8 address;
-	u8 value;
+	uint8_t address;
+	uint8_t value;
 };
 
 static struct status_registers {
@@ -401,11 +255,11 @@ static struct status_registers {
 
 static int lsm303d_i2c_read(struct lsm303d_status *stat, u8 *buf, int len)
 {
-	int ret;
-	u8 reg = buf[0];
-	u8 cmd = reg;
+	int32_t ret;
+	uint8_t reg = buf[0];
+	uint8_t cmd = reg;
 #ifdef DEBUG
-	unsigned int ii;
+	uint32_t ii;
 #endif
 
 
@@ -671,7 +525,7 @@ err_firstread:
 	return err;
 }
 
-static irqreturn_t lsm303d_isr1(int irq, void *dev)
+static irqreturn_t lsm303d_isr1(int32_t irq, void *dev)
 {
 	struct lsm303d_status *stat = dev;
 
@@ -693,8 +547,8 @@ static irqreturn_t lsm303d_isr2(int irq, void *dev)
 
 static void lsm303d_interrupt_catch(struct lsm303d_status *stat, int pin ) 
 {
-	u8 buf[2];
-	u8 val;
+	uint8_t buf[2];
+	uint8_t val;
 
 	if(atomic_read(&stat->interrupt->gen1_pin1.enable) == 1) {
 		buf[0] = status_registers.int_gen1_src.address;
@@ -3000,398 +2854,6 @@ enum hrtimer_restart poll_function_read_mag(struct hrtimer *timer)
 	return HRTIMER_NORESTART;
 }
 
-static int lsm303d_probe(struct i2c_client *client,
-		const struct i2c_device_id *id)
-{
-	struct lsm303d_status *stat;
-
-	u32 smbus_func = I2C_FUNC_SMBUS_BYTE_DATA | 
-			I2C_FUNC_SMBUS_WORD_DATA | I2C_FUNC_SMBUS_I2C_BLOCK;
-
-	int err = -1;
-	dev_info(&client->dev, "probe start.\n");
-	stat = kzalloc(sizeof(struct lsm303d_status), GFP_KERNEL);
-	if (stat == NULL) {
-		err = -ENOMEM;
-		dev_err(&client->dev,
-				"failed to allocate memory for module data: "
-					"%d\n", err);
-		goto exit_check_functionality_failed;
-	}
-
-	stat->use_smbus = 0;
-	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
-		dev_warn(&client->dev, "client not i2c capable\n");
-		if (i2c_check_functionality(client->adapter, smbus_func)){
-			stat->use_smbus = 1;
-			dev_warn(&client->dev, "client using SMBUS\n");
-		} else {			
-			err = -ENODEV;
-			dev_err(&client->dev, "client nor SMBUS capable\n");
-			goto exit_check_functionality_failed;
-		}
-	}
-
-	if(lsm303d_workqueue == 0)
-		lsm303d_workqueue = create_workqueue("lsm303d_workqueue");
-
-	hrtimer_init(&stat->hr_timer_acc, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	stat->hr_timer_acc.function = &poll_function_read_acc;
-	hrtimer_init(&stat->hr_timer_mag, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	stat->hr_timer_mag.function = &poll_function_read_mag;
-
-	mutex_init(&stat->lock);
-	mutex_lock(&stat->lock);
-
-	stat->client = client;
-	i2c_set_clientdata(client, stat);
-
-	stat->pdata_acc = kmalloc(sizeof(*stat->pdata_acc), GFP_KERNEL);
-	stat->pdata_mag = kmalloc(sizeof(*stat->pdata_mag), GFP_KERNEL);
-	if ((stat->pdata_acc == NULL)||(stat->pdata_mag == NULL)) {
-		err = -ENOMEM;
-		dev_err(&client->dev,
-			"failed to allocate memory for pdata: %d\n", err);
-		goto err_mutexunlock;
-	}
-
-	if (client->dev.platform_data == NULL) {
-		memcpy(stat->pdata_acc, &default_lsm303d_acc_pdata,
-						sizeof(*stat->pdata_acc));
-		memcpy(stat->pdata_mag, &default_lsm303d_mag_pdata,
-						sizeof(*stat->pdata_mag));
-		dev_info(&client->dev, "using default plaform_data for "
-					"accelerometer and magnetometer\n");
-	} else {
-		struct lsm303d_main_platform_data *tmp;
-		tmp = kzalloc(sizeof(struct lsm303d_main_platform_data), 
-								GFP_KERNEL);
-		if(tmp == NULL)
-			goto exit_kfree_pdata;
-		memcpy(tmp, client->dev.platform_data, sizeof(*tmp));
-		if(tmp->pdata_acc == NULL) {
-			memcpy(stat->pdata_acc, &default_lsm303d_acc_pdata,
-						sizeof(*stat->pdata_acc));
-			dev_info(&client->dev, "using default plaform_data for "
-							"accelerometer\n");
-		} else {
-			memcpy(stat->pdata_acc, tmp->pdata_acc, 
-						sizeof(*stat->pdata_acc));
-		}
-		if(tmp->pdata_mag == NULL) {
-			memcpy(stat->pdata_mag, &default_lsm303d_mag_pdata,
-						sizeof(*stat->pdata_mag));
-			dev_info(&client->dev, "using default plaform_data for "
-							"magnetometer\n");
-		} else {
-			memcpy(stat->pdata_mag, tmp->pdata_mag, 
-						sizeof(*stat->pdata_mag));
-		}
-		kfree(tmp);
-	}
-
-	err = lsm303d_acc_validate_pdata(stat);
-	if (err < 0) {
-		dev_err(&client->dev, "failed to validate platform data for "
-							"accelerometer \n");
-		goto exit_kfree_pdata;
-	}
-
-	err = lsm303d_mag_validate_pdata(stat);
-	if (err < 0) {
-		dev_err(&client->dev, "failed to validate platform data for "
-							"magnetometer\n");
-		goto exit_kfree_pdata;
-	}
-
-	if (stat->pdata_acc->init) {
-		err = stat->pdata_acc->init();
-		if (err < 0) {
-			dev_err(&client->dev, "accelerometer init failed: "
-								"%d\n", err);
-			goto err_pdata_acc_init;
-		}
-	}
-	if (stat->pdata_mag->init) {
-		err = stat->pdata_mag->init();
-		if (err < 0) {
-			dev_err(&client->dev, "magnetometer init failed: "
-								"%d\n", err);
-			goto err_pdata_mag_init;
-		}
-	}
-
-	if(stat->pdata_acc->gpio_int1 >= 0) {
-		if (!gpio_is_valid(stat->pdata_acc->gpio_int1)) {
-  			dev_err(&client->dev, "The requested GPIO [%d] is not "
-				"available\n", stat->pdata_acc->gpio_int1);
-			err = -EINVAL;
-  			goto err_gpio1_valid;
-		}
-		
-		err = gpio_request(stat->pdata_acc->gpio_int1, 
-						"INTERRUPT_PIN1_LSM303D");
-		if(err < 0) {
-			dev_err(&client->dev, "Unable to request GPIO [%d].\n",
-						stat->pdata_acc->gpio_int1);
-  			err = -EINVAL;
-			goto err_gpio1_valid;
-		}
-		gpio_direction_input(stat->pdata_acc->gpio_int1);
-		stat->irq1 = gpio_to_irq(stat->pdata_acc->gpio_int1);
-		if(stat->irq1 < 0) {
-			dev_err(&client->dev, "GPIO [%d] cannot be used as "
-				"interrupt.\n",	stat->pdata_acc->gpio_int1);
-			err = -EINVAL;
-			goto err_gpio1_irq;
-		}
-		pr_info("%s: %s has set irq1 to irq: %d, mapped on gpio:%d\n",
-			LSM303D_DEV_NAME, __func__, stat->irq1,
-						stat->pdata_acc->gpio_int1);
-	}
-
-	if(stat->pdata_acc->gpio_int2 >= 0) {
-		if (!gpio_is_valid(stat->pdata_acc->gpio_int2)) {
-  			dev_err(&client->dev, "The requested GPIO [%d] is not "
-				"available\n", stat->pdata_acc->gpio_int2);
-			err = -EINVAL;
-  			goto err_gpio2_valid;
-		}
-		
-		err = gpio_request(stat->pdata_acc->gpio_int2, 
-						"INTERRUPT_PIN2_LSM303D");
-		if(err < 0) {
-			dev_err(&client->dev, "Unable to request GPIO [%d].\n",
-						stat->pdata_acc->gpio_int2);
-  			err = -EINVAL;
-			goto err_gpio2_valid;
-		}
-		gpio_direction_input(stat->pdata_acc->gpio_int2);
-		stat->irq2 = gpio_to_irq(stat->pdata_acc->gpio_int2);
-		if(stat->irq2 < 0) {
-			dev_err(&client->dev, "GPIO [%d] cannot be used as "
-				"interrupt.\n", stat->pdata_acc->gpio_int2);
-			err = -EINVAL;
-			goto err_gpio2_irq;
-		}
-		pr_info("%s: %s has set irq2 to irq: %d, "
-							"mapped on gpio:%d\n",
-			LSM303D_DEV_NAME, __func__, stat->irq2,
-						stat->pdata_acc->gpio_int2);
-	}
-
-	err = lsm303d_hw_init(stat);
-	if (err < 0) {
-		dev_err(&client->dev, "hw init failed: %d\n", err);
-		goto err_hw_init;
-	}
-
-	err = lsm303d_acc_device_power_on(stat);
-	if (err < 0) {
-		dev_err(&client->dev, "accelerometer power on failed: "
-								"%d\n", err);
-		goto err_pdata_init;
-	}
-	err = lsm303d_mag_device_power_on(stat);
-	if (err < 0) {
-		dev_err(&client->dev, "magnetometer power on failed: "
-								"%d\n", err);
-		goto err_pdata_init;
-	}
-
-	err = lsm303d_acc_update_fs_range(stat, stat->pdata_acc->fs_range);
-	if (err < 0) {
-		dev_err(&client->dev, "update_fs_range on accelerometer "
-								"failed\n");
-		goto  err_power_off_acc;
-	}
-
-	err = lsm303d_mag_update_fs_range(stat, stat->pdata_mag->fs_range);
-	if (err < 0) {
-		dev_err(&client->dev, "update_fs_range on magnetometer "
-								"failed\n");
-		goto  err_power_off_mag;
-	}
-
-	err = lsm303d_acc_update_odr(stat, stat->pdata_acc->poll_interval);
-	if (err < 0) {
-		dev_err(&client->dev, "update_odr on accelerometer failed\n");
-		goto  err_power_off;
-	}
-
-	err = lsm303d_mag_update_odr(stat, stat->pdata_mag->poll_interval);
-	if (err < 0) {
-		dev_err(&client->dev, "update_odr on magnetometer failed\n");
-		goto  err_power_off;
-	}
-
-	err = lsm303d_acc_update_filter(stat, 
-					stat->pdata_acc->aa_filter_bandwidth);
-	if (err < 0) {
-		dev_err(&client->dev, "update_filter on accelerometer "
-								"failed\n");
-		goto  err_power_off;
-	}
-
-	err = lsm303d_acc_input_init(stat);
-	if (err < 0) {
-		dev_err(&client->dev, "accelerometer input init failed\n");
-		goto err_power_off;
-	}
-
-	err = lsm303d_mag_input_init(stat);
-	if (err < 0) {
-		dev_err(&client->dev, "magnetometer input init failed\n");
-		goto err_power_off;
-	}
-
-	err = create_sysfs_interfaces(&client->dev);
-	if (err < 0) {
-		dev_err(&client->dev,
-		"device LSM303D_DEV_NAME sysfs register failed\n");
-		goto err_input_cleanup;
-	}
-
-	lsm303d_acc_device_power_off(stat);
-	lsm303d_mag_device_power_off(stat);
-
-	if(stat->pdata_acc->gpio_int1 >= 0){
-		INIT_WORK(&stat->irq1_work, lsm303d_irq1_work_func);
-		stat->irq1_work_queue =
-				create_singlethread_workqueue("lsm303d_wq1");
-		if (!stat->irq1_work_queue) {
-			err = -ENOMEM;
-			dev_err(&client->dev,
-					"cannot create work queue1: %d\n", err);
-			goto err_remove_sysfs_int;
-		}
-		err = request_irq(stat->irq1, lsm303d_isr1,
-				IRQF_TRIGGER_RISING, "lsm303d_irq1", stat);
-		if (err < 0) {
-			dev_err(&client->dev, "request irq1 failed: %d\n", err);
-			goto err_destoyworkqueue1;
-		}
-		disable_irq_nosync(stat->irq1);
-	}
-
-	if(stat->pdata_acc->gpio_int2 >= 0){
-		INIT_WORK(&stat->irq2_work, lsm303d_irq2_work_func);
-		stat->irq2_work_queue =
-				create_singlethread_workqueue("lsm303d_wq2");
-		if (!stat->irq2_work_queue) {
-			err = -ENOMEM;
-			dev_err(&client->dev,
-					"cannot create work queue2: %d\n", err);
-			goto err_free_irq1;
-		}
-		err = request_irq(stat->irq2, lsm303d_isr2,
-				IRQF_TRIGGER_RISING, "lsm303d_irq2", stat);
-		if (err < 0) {
-			dev_err(&client->dev, "request irq2 failed: %d\n", err);
-			goto err_destoyworkqueue2;
-		}
-		disable_irq_nosync(stat->irq2);
-	}
-
-	INIT_WORK(&stat->input_work_acc, poll_function_work_acc);
-	INIT_WORK(&stat->input_work_mag, poll_function_work_mag);
-
-	mutex_unlock(&stat->lock);
-	dev_info(&client->dev, "%s: probed\n", LSM303D_DEV_NAME);
-	return 0;
-
-err_destoyworkqueue2:
-	destroy_workqueue(stat->irq2_work_queue);
-err_free_irq1:
-	free_irq(stat->irq1, stat);
-err_destoyworkqueue1:
-	destroy_workqueue(stat->irq1_work_queue);
-err_remove_sysfs_int:
-	remove_sysfs_interfaces(&client->dev);
-err_input_cleanup:
-	lsm303d_input_cleanup(stat);
-err_power_off:
-err_power_off_mag:
-	lsm303d_mag_device_power_off(stat);
-err_power_off_acc:
-	lsm303d_acc_device_power_off(stat);
-	kfree(stat->interrupt);
-err_hw_init:
-err_gpio2_irq:
-	gpio_free(stat->pdata_acc->gpio_int2);
-err_gpio2_valid:
-err_gpio1_irq:
-	gpio_free(stat->pdata_acc->gpio_int1);
-err_gpio1_valid:
-err_pdata_init:
-err_pdata_mag_init:
-	if (stat->pdata_mag->exit)
-		stat->pdata_mag->exit();
-err_pdata_acc_init:
-	if (stat->pdata_acc->exit)
-		stat->pdata_acc->exit();
-exit_kfree_pdata:
-	kfree(stat->pdata_acc);
-	kfree(stat->pdata_mag);
-err_mutexunlock:
-	mutex_unlock(&stat->lock);
-	kfree(stat);
-	if(!lsm303d_workqueue) {
-		flush_workqueue(lsm303d_workqueue);
-		destroy_workqueue(lsm303d_workqueue);
-	}
-exit_check_functionality_failed:
-	pr_err("%s: Driver Init failed\n", LSM303D_DEV_NAME);
-	return err;
-}
-
-static int __devexit lsm303d_remove(struct i2c_client *client)
-{
-	struct lsm303d_status *stat = i2c_get_clientdata(client);
-
-	lsm303d_acc_disable(stat);
-	lsm303d_mag_disable(stat);
-	lsm303d_temperature_disable(stat);
-
-	if(stat->pdata_acc->gpio_int1 >= 0) {
-		free_irq(stat->irq1, stat);
-		gpio_free(stat->pdata_acc->gpio_int1);
-		destroy_workqueue(stat->irq1_work_queue);
-	}
-
-	if(stat->pdata_acc->gpio_int2 >= 0) {
-		free_irq(stat->irq2, stat);
-		gpio_free(stat->pdata_acc->gpio_int2);
-		destroy_workqueue(stat->irq2_work_queue);
-	}
-
-	lsm303d_acc_input_cleanup(stat);
-	lsm303d_mag_input_cleanup(stat);
-
-	remove_sysfs_interfaces(&client->dev);
-
-	if (stat->pdata_acc->exit)
-		stat->pdata_acc->exit();
-
-	if (stat->pdata_mag->exit)
-		stat->pdata_mag->exit();
-
-	if((stat->pdata_acc->gpio_int1 >= 0)||
-					(stat->pdata_acc->gpio_int2 >= 0)) {
-		kfree(stat->interrupt);
-	}
-
-	if(!lsm303d_workqueue) {
-		flush_workqueue(lsm303d_workqueue);
-		destroy_workqueue(lsm303d_workqueue);
-	}
-
-	kfree(stat->pdata_acc);
-	kfree(stat->pdata_mag);
-	kfree(stat);
-	return 0;
-}
-
 static const struct i2c_device_id lsm303d_id[] 
 					= { { LSM303D_DEV_NAME, 0 }, { }, };
 
@@ -3409,14 +2871,7 @@ static struct i2c_driver lsm303d_driver = {
 
 static int __init lsm303d_init(void)
 {
-	pr_info("%s driver: init\n", LSM303D_DEV_NAME);
 	return i2c_add_driver(&lsm303d_driver);
-}
-
-static void __exit lsm303d_exit(void)
-{
-	pr_info("%s driver exit\n", LSM303D_DEV_NAME);
-	i2c_del_driver(&lsm303d_driver);
 }
 
 module_init(lsm303d_init);
