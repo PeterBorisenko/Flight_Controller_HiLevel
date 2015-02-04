@@ -28,50 +28,43 @@
 	No Connection to EOC or XCLR pins
 */
 
-#include <./math.h>	// To calculate altitude
-#include "./Communication.h"
+#include <math.h>	// To calculate altitude
+#include <stdint.h>
+#include "../Communication.h"
 
 #define BMP085_R 0xEF
 #define BMP085_W 0xEE
 #define OSS 0	// Oversampling Setting (note: code is not set up to use other OSS values)
 
+// Barometric data struct
+typedef struct {
+	int64_t	temperature;
+	int64_t	pressure;
+	int64_t	altitude;
+} Baro_t;
+
 ///============Function Prototypes=========/////////////////
-void BMP085_Calibration(void);
+void BMP085Calibration(void);
 
 ///============I2C Prototypes=============//////////////////
-short bmp085ReadShort(unsigned char address);
-long bmp085ReadTemp(void);
-long bmp085ReadPressure(void);
-void bmp085Convert(long * temperature, long * pressure);
+int16_t BMP085ReadShort(uint8_t);
+int64_t BMP085ReadTemp(void);
+int64_t BMP085ReadPressure(void);
+void BMP085Convert(Baro_t *);
+void BMP085CalculateAltitude(Baro_t *);
 
 /////=========Global Variables======////////////////////
-short ac1;
-short ac2; 
-short ac3; 
-unsigned short ac4;
-unsigned short ac5;
-unsigned short ac6;
-short b1; 
-short b2;
-short mb;
-short mc;
-short md;
-
-/*	
-	long temperature = 0;
-	long pressure = 0;
-	long altitude = 0;
-	double temp = 0;
-
-	BMP085_Calibration();
-	
-	bmp085Convert(&temperature, &pressure);
-		
-	temp = (double) pressure/101325;
-	temp = 1-pow(temp, 0.19029);
-	altitude = round(44330*temp);
-*/
-
+int16_t ac1;
+int16_t ac2; 
+int16_t ac3; 
+uint16_t ac4;
+uint16_t ac5;
+uint16_t ac6;
+int16_t b1; 
+int16_t b2;
+int16_t mb;
+int16_t mc;
+int16_t md;
 
 
 #endif /* BMP085_H_ */
