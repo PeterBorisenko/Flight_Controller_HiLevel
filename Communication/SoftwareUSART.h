@@ -9,7 +9,7 @@
 #ifndef SOFTWAREUSART_H_
 #define SOFTWAREUSART_H_
 
-
+SSsendChar();
 
 
 
