@@ -27,7 +27,7 @@
 #define ROUND(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 
 #define DEC_TO_ASCII(x)	(x+=0x30)
-#define HEX_TO_ASCII(x)	((x<0x0F)?(DEC_TO_ASCII(x)):(x+= 0x41))
+#define HEX_TO_ASCII(x)	((x<0x0F)?(DEC_TO_ASCII(x)):(x+= 0x37))
 
 // constants
 #define PI		3.14159265359
