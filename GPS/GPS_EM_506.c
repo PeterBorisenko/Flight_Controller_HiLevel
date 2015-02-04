@@ -5,7 +5,8 @@
  *  Author: Disgust
  */ 
 
-#include "GPS.h"
+#include "GPS_EM_506.h"
+#include "../Communication.h"
 
 void GPSinit() {
 }
@@ -28,29 +29,29 @@ void GPSsetSerialPort(GPScommand100_t * buf) {
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
 	//---- head
-	sendChar('$');
-	sendChar('P');
-	sendChar('S');
-	sendChar('R');
-	sendChar('F');
-	sendChar('1');
-	sendChar('0');
-	sendChar('0');
+	SSsendChar('$');
+	SSsendChar('P');
+	SSsendChar('S');
+	SSsendChar('R');
+	SSsendChar('F');
+	SSsendChar('1');
+	SSsendChar('0');
+	SSsendChar('0');
 	//---- body
-	sendChar(buf->proto);
+	SSsendChar(buf->proto);
 	for (uint8_t i= 0; i < gpsBaudLength; i++)
 	{
-		sendChar(buf->baud[i]);
+		SSsendChar(buf->baud[i]);
 	}
-	sendChar(buf->dataBits);
-	sendChar(buf->stopBits);
-	sendChar(buf->parity);
+	SSsendChar(buf->dataBits);
+	SSsendChar(buf->stopBits);
+	SSsendChar(buf->parity);
 	//---- tail
-	sendChar('*');
-	sendChar(ch1);
-	sendChar(ch2);
-	sendChar(0x0D);
-	sendChar(0x0A);
+	SSsendChar('*');
+	SSsendChar(ch1);
+	SSsendChar(ch2);
+	SSsendChar(0x0D);
+	SSsendChar(0x0A);
 }
 
 void GPSinitNav(GPScommand101_t * buf) {
@@ -60,45 +61,45 @@ void GPSinitNav(GPScommand101_t * buf) {
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
 	//---- head
-	sendChar('$');
-	sendChar('P');
-	sendChar('S');
-	sendChar('R');
-	sendChar('F');
-	sendChar('1');
-	sendChar('0');
-	sendChar('1');
+	SSsendChar('$');
+	SSsendChar('P');
+	SSsendChar('S');
+	SSsendChar('R');
+	SSsendChar('F');
+	SSsendChar('1');
+	SSsendChar('0');
+	SSsendChar('1');
 	//---- body
-	sendChar((uint8_t)buf->posX >> 24); // TODO: check this!
-	sendChar((uint8_t)buf->posX >> 16);
-	sendChar((uint8_t)buf->posX >> 8); 
-	sendChar((uint8_t)buf->posX);
-	sendChar((uint8_t)buf->posY >> 24);
-	sendChar((uint8_t)buf->posY >> 16);
-	sendChar((uint8_t)buf->posY >> 8);
-	sendChar((uint8_t)buf->posY);
-	sendChar((uint8_t)buf->posZ >> 24);
-	sendChar((uint8_t)buf->posZ >> 16);
-	sendChar((uint8_t)buf->posZ >> 8);
-	sendChar((uint8_t)buf->posZ);
-	sendChar((uint8_t)buf->clkOffset >> 24);
-	sendChar((uint8_t)buf->clkOffset >> 16);
-	sendChar((uint8_t)buf->clkOffset >> 8);
-	sendChar((uint8_t)buf->clkOffset);
-	sendChar((uint8_t)buf->timeOfWeek >> 24);
-	sendChar((uint8_t)buf->timeOfWeek >> 16);
-	sendChar((uint8_t)buf->timeOfWeek >> 8);
-	sendChar((uint8_t)buf->timeOfWeek);
-	sendChar((uint8_t)buf->weekNo >> 8);
-	sendChar((uint8_t)buf->weekNo);
-	sendChar(buf->chnlCount);
-	sendChar(buf->resetCfg);
+	SSsendChar((uint8_t)buf->posX >> 24); // TODO: check this!
+	SSsendChar((uint8_t)buf->posX >> 16);
+	SSsendChar((uint8_t)buf->posX >> 8); 
+	SSsendChar((uint8_t)buf->posX);
+	SSsendChar((uint8_t)buf->posY >> 24);
+	SSsendChar((uint8_t)buf->posY >> 16);
+	SSsendChar((uint8_t)buf->posY >> 8);
+	SSsendChar((uint8_t)buf->posY);
+	SSsendChar((uint8_t)buf->posZ >> 24);
+	SSsendChar((uint8_t)buf->posZ >> 16);
+	SSsendChar((uint8_t)buf->posZ >> 8);
+	SSsendChar((uint8_t)buf->posZ);
+	SSsendChar((uint8_t)buf->clkOffset >> 24);
+	SSsendChar((uint8_t)buf->clkOffset >> 16);
+	SSsendChar((uint8_t)buf->clkOffset >> 8);
+	SSsendChar((uint8_t)buf->clkOffset);
+	SSsendChar((uint8_t)buf->timeOfWeek >> 24);
+	SSsendChar((uint8_t)buf->timeOfWeek >> 16);
+	SSsendChar((uint8_t)buf->timeOfWeek >> 8);
+	SSsendChar((uint8_t)buf->timeOfWeek);
+	SSsendChar((uint8_t)buf->weekNo >> 8);
+	SSsendChar((uint8_t)buf->weekNo);
+	SSsendChar(buf->chnlCount);
+	SSsendChar(buf->resetCfg);
 	//---- tail
-	sendChar('*');
-	sendChar(ch1);
-	sendChar(ch2);
-	sendChar(0x0D);
-	sendChar(0x0A);
+	SSsendChar('*');
+	SSsendChar(ch1);
+	SSsendChar(ch2);
+	SSsendChar(0x0D);
+	SSsendChar(0x0A);
 }
 
 void GPSsetDGPS(GPScommand102_t * buf) {
@@ -108,24 +109,24 @@ void GPSsetDGPS(GPScommand102_t * buf) {
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
 	//---- head
-	sendChar('$');
-	sendChar('P');
-	sendChar('S');
-	sendChar('R');
-	sendChar('F');
-	sendChar('1');
-	sendChar('0');
-	sendChar('2');
+	SSsendChar('$');
+	SSsendChar('P');
+	SSsendChar('S');
+	SSsendChar('R');
+	SSsendChar('F');
+	SSsendChar('1');
+	SSsendChar('0');
+	SSsendChar('2');
 	//---- body
-	sendChar(buf->dataBits);
-	sendChar(buf->stopBits);
-	sendChar(buf->parity);
+	SSsendChar(buf->dataBits);
+	SSsendChar(buf->stopBits);
+	SSsendChar(buf->parity);
 	//---- tail
-	sendChar('*');
-	sendChar(ch1);
-	sendChar(ch2);
-	sendChar(0x0D);
-	sendChar(0x0A);
+	SSsendChar('*');
+	SSsendChar(ch1);
+	SSsendChar(ch2);
+	SSsendChar(0x0D);
+	SSsendChar(0x0A);
 }
 
 void GPSsetQueryRateCtl(GPScommand103_t * buf) {
@@ -135,25 +136,25 @@ void GPSsetQueryRateCtl(GPScommand103_t * buf) {
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
 	//---- head
-	sendChar('$');
-	sendChar('P');
-	sendChar('S');
-	sendChar('R');
-	sendChar('F');
-	sendChar('1');
-	sendChar('0');
-	sendChar('3');
+	SSsendChar('$');
+	SSsendChar('P');
+	SSsendChar('S');
+	SSsendChar('R');
+	SSsendChar('F');
+	SSsendChar('1');
+	SSsendChar('0');
+	SSsendChar('3');
 	//---- body
-	sendChar(buf->msg);
-	sendChar(buf->mode);
-	sendChar(buf->rate);
-	sendChar(buf->checkSumEn);
+	SSsendChar(buf->msg);
+	SSsendChar(buf->mode);
+	SSsendChar(buf->rate);
+	SSsendChar(buf->checkSumEn);
 	//---- tail
-	sendChar('*');
-	sendChar(ch1);
-	sendChar(ch2);
-	sendChar(0x0D);
-	sendChar(0x0A);
+	SSsendChar('*');
+	SSsendChar(ch1);
+	SSsendChar(ch2);
+	SSsendChar(0x0D);
+	SSsendChar(0x0A);
 }
 
 void GPSllaNavInit(GPScommand104_t * buf) {
@@ -163,45 +164,45 @@ void GPSllaNavInit(GPScommand104_t * buf) {
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
 	//---- head
-	sendChar('$');
-	sendChar('P');
-	sendChar('S');
-	sendChar('R');
-	sendChar('F');
-	sendChar('1');
-	sendChar('0');
-	sendChar('4');
+	SSsendChar('$');
+	SSsendChar('P');
+	SSsendChar('S');
+	SSsendChar('R');
+	SSsendChar('F');
+	SSsendChar('1');
+	SSsendChar('0');
+	SSsendChar('4');
 	//---- body
-	sendChar((uint8_t)buf->lat >> 24); // TODO: Check this!!!
-	sendChar((uint8_t)buf->lat >> 16);
-	sendChar((uint8_t)buf->lat >> 8);
-	sendChar((uint8_t)buf->lat);
-	sendChar((uint8_t)buf->lon >> 24);
-	sendChar((uint8_t)buf->lon >> 16);
-	sendChar((uint8_t)buf->lon >> 8);
-	sendChar((uint8_t)buf->lon);
-	sendChar((uint8_t)buf->alt >> 24);
-	sendChar((uint8_t)buf->alt >> 16);
-	sendChar((uint8_t)buf->alt >> 8);
-	sendChar((uint8_t)buf->alt);
-	sendChar((uint8_t)buf->clkOffset >> 24);
-	sendChar((uint8_t)buf->clkOffset >> 16);
-	sendChar((uint8_t)buf->clkOffset >> 8);
-	sendChar((uint8_t)buf->clkOffset);
-	sendChar((uint8_t)buf->timeOfWeek >> 24);
-	sendChar((uint8_t)buf->timeOfWeek >> 16);
-	sendChar((uint8_t)buf->timeOfWeek >> 8);
-	sendChar((uint8_t)buf->timeOfWeek);
-	sendChar((uint8_t)buf->weekNo >> 8);
-	sendChar((uint8_t)buf->weekNo);
-	sendChar(buf->channelCount);
-	sendChar(buf->resetCfg);
+	SSsendChar((uint8_t)buf->lat >> 24); // TODO: Check this!!!
+	SSsendChar((uint8_t)buf->lat >> 16);
+	SSsendChar((uint8_t)buf->lat >> 8);
+	SSsendChar((uint8_t)buf->lat);
+	SSsendChar((uint8_t)buf->lon >> 24);
+	SSsendChar((uint8_t)buf->lon >> 16);
+	SSsendChar((uint8_t)buf->lon >> 8);
+	SSsendChar((uint8_t)buf->lon);
+	SSsendChar((uint8_t)buf->alt >> 24);
+	SSsendChar((uint8_t)buf->alt >> 16);
+	SSsendChar((uint8_t)buf->alt >> 8);
+	SSsendChar((uint8_t)buf->alt);
+	SSsendChar((uint8_t)buf->clkOffset >> 24);
+	SSsendChar((uint8_t)buf->clkOffset >> 16);
+	SSsendChar((uint8_t)buf->clkOffset >> 8);
+	SSsendChar((uint8_t)buf->clkOffset);
+	SSsendChar((uint8_t)buf->timeOfWeek >> 24);
+	SSsendChar((uint8_t)buf->timeOfWeek >> 16);
+	SSsendChar((uint8_t)buf->timeOfWeek >> 8);
+	SSsendChar((uint8_t)buf->timeOfWeek);
+	SSsendChar((uint8_t)buf->weekNo >> 8);
+	SSsendChar((uint8_t)buf->weekNo);
+	SSsendChar(buf->channelCount);
+	SSsendChar(buf->resetCfg);
 	//---- tail
-	sendChar('*');
-	sendChar(ch1);
-	sendChar(ch2);
-	sendChar(0x0D);
-	sendChar(0x0A);
+	SSsendChar('*');
+	SSsendChar(ch1);
+	SSsendChar(ch2);
+	SSsendChar(0x0D);
+	SSsendChar(0x0A);
 }
 
 void GPStglDevData(GPScommand105_t * buf) {
@@ -211,22 +212,22 @@ void GPStglDevData(GPScommand105_t * buf) {
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
 	//---- head
-	sendChar('$');
-	sendChar('P');
-	sendChar('S');
-	sendChar('R');
-	sendChar('F');
-	sendChar('1');
-	sendChar('0');
-	sendChar('5');
+	SSsendChar('$');
+	SSsendChar('P');
+	SSsendChar('S');
+	SSsendChar('R');
+	SSsendChar('F');
+	SSsendChar('1');
+	SSsendChar('0');
+	SSsendChar('5');
 	//---- body
-	sendChar(buf->debug);
+	SSsendChar(buf->debug);
 	//---- tail
-	sendChar('*');
-	sendChar(ch1);
-	sendChar(ch2);
-	sendChar(0x0D);
-	sendChar(0x0A);
+	SSsendChar('*');
+	SSsendChar(ch1);
+	SSsendChar(ch2);
+	SSsendChar(0x0D);
+	SSsendChar(0x0A);
 }
 
 void GPSselDatum(GPScommand106_t * buf) {
@@ -236,22 +237,22 @@ void GPSselDatum(GPScommand106_t * buf) {
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
 	//---- head
-	sendChar('$');
-	sendChar('P');
-	sendChar('S');
-	sendChar('R');
-	sendChar('F');
-	sendChar('1');
-	sendChar('0');
-	sendChar('6');
+	SSsendChar('$');
+	SSsendChar('P');
+	SSsendChar('S');
+	SSsendChar('R');
+	SSsendChar('F');
+	SSsendChar('1');
+	SSsendChar('0');
+	SSsendChar('6');
 	//---- body
-	sendChar(buf->datum);
+	SSsendChar(buf->datum);
 	//---- tail
-	sendChar('*');
-	sendChar(ch1);
-	sendChar(ch2);
-	sendChar(0x0D);
-	sendChar(0x0A);
+	SSsendChar('*');
+	SSsendChar(ch1);
+	SSsendChar(ch2);
+	SSsendChar(0x0D);
+	SSsendChar(0x0A);
 }
 
 // GPS Read commands
