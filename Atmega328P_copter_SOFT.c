@@ -31,10 +31,13 @@ volatile uint8_t transmitByteCount= DATA_WIDTH;
 volatile static uint8_t FLAGS= 0x00;
 
 // Vector instructions for drive system
-volatile static vect_t required_vect_X;
-volatile static vect_t required_vect_Y;
-volatile static vect_t required_vect_Z;
+typedef struct {
+	vect_t required_vect_X;
+	vect_t required_vect_Y;
+	vect_t required_vect_Z;
+} Required_t;
 
+volatile static Required_t * Required;
 Baro_t * Baro;
 
 void prepareCompass() {
