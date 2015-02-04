@@ -26,7 +26,8 @@
 #define CIRCLE(amt, low, high) ((amt)<(low)?(high):((amt)>(high)?(low):(amt)))
 #define ROUND(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 
-//static FILE messageLog = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+#define DEC_TO_ASCII(x)	(x+=0x30)
+#define HEX_TO_ASCII(x)	((x<0x0F)?(DEC_TO_ASCII(x)):(x+= 0x41))
 
 // constants
 #define PI		3.14159265359
