@@ -54,7 +54,7 @@ void GPSsetSerialPort(GPScommand100_t * buf) {
 	SSsendChar(0x0A);
 }
 
-void GPSinitNav(GPScommand101_t * buf) {
+void GPSinitNav(GPSnavInit_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
 	(allBitsXor((uint8_t)buf->weekNo >> 8) << 3)|(allBitsXor((uint8_t)buf->weekNo) << 2)|(allBitsXor(buf->chnlCount) << 1)|(allBitsXor(buf->resetCfg));
 
@@ -102,7 +102,7 @@ void GPSinitNav(GPScommand101_t * buf) {
 	SSsendChar(0x0A);
 }
 
-void GPSsetDGPS(GPScommand102_t * buf) {
+void GPSsetDGPS(GPSsetDGPS_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
 	(allBitsXor('2') << 3)|(allBitsXor(buf->dataBits) << 2)|(allBitsXor(buf->stopBits) << 1)|(allBitsXor(buf->parity));
 
@@ -129,7 +129,7 @@ void GPSsetDGPS(GPScommand102_t * buf) {
 	SSsendChar(0x0A);
 }
 
-void GPSsetQueryRateCtl(GPScommand103_t * buf) {
+void GPSsetQueryRateCtl(GPSsetQueryRateCtl_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
 	(allBitsXor(buf->msg) << 3)|(allBitsXor(buf->mode) << 2)|(allBitsXor(buf->rate) << 1)|(allBitsXor(buf->checkSumEn));
 

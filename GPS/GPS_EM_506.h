@@ -95,7 +95,7 @@ typedef struct {
 	uint8_t		dataBits;
 	uint8_t		stopBits;
 	uint8_t		parity;
-} GPScommand100_t;
+} GPSsetSerialPort_t;
 
 // Navigation initialization
 typedef struct {
@@ -107,14 +107,14 @@ typedef struct {
 	uint16_t	weekNo;
 	uint8_t		chnlCount;
 	uint8_t		resetCfg;
-} GPScommand101_t;
+} GPSinitNav_t;
 
 // Set DGPS
 typedef struct {
 	uint8_t		dataBits; // always 8
 	uint8_t		stopBits;
 	uint8_t		parity;
-} GPScommand102_t;
+} GPSsetDGPS_t;
 
 // Query/Rate Control
 typedef struct {
@@ -122,7 +122,7 @@ typedef struct {
 	uint8_t		mode;
 	uint8_t		rate;
 	uint8_t		checkSumEn;
-} GPScommand103_t;
+} GPSsetQueryRateCtl_t;
 
 // LLA Navigation initialization 
 typedef struct {
@@ -134,32 +134,32 @@ typedef struct {
 	uint16_t	weekNo;
 	uint8_t		channelCount;
 	uint8_t		resetCfg;
-} GPScommand104_t;
+} GPSinitLlaNav_t;
 
 // Development Data On/Off 
 typedef struct {
 	uint8_t		debug;
-} GPScommand105_t;
+} GPStglDevData_t;
 
 // Select Datum
 typedef struct {
 	uint8_t		datum;
-} GPScommand106_t;
+} GPSselDatum_t;
 
 // Write functions prototypes
-void GPSsetSerialPort(GPScommand100_t *);
+void GPSsetSerialPort(GPSsetSerialPort_t *);
 
-void GPSinitNav(GPScommand101_t *);
+void GPSinitNav(GPSinitNav_t *);
 
-void GPSsetDGPS(GPScommand102_t *);
+void GPSsetDGPS(GPSsetDGPS_t *);
 
-void GPSsetQueryRateCtl(GPScommand103_t *);
+void GPSsetQueryRateCtl(GPSsetQueryRateCtl_t *);
 
-void GPSllaNavInit(GPScommand104_t *);
+void GPSllaNavInit(GPSinitLlaNav_t *);
 
-void GPStglDevData(GPScommand105_t *);
+void GPStglDevData(GPStglDevData_t *);
 
-void GPSselDatum(GPScommand106_t *);
+void GPSselDatum(GPSselDatum_t *);
 
 // NMEA Receive Data Structured
 
