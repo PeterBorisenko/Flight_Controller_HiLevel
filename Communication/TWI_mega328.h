@@ -27,7 +27,7 @@
 
 // Functions
 
-uint8_t TWI_Init(uint64_t)
+unsigned char TWI_Init(unsigned long);
 
 void TWIslaveRead(uint8_t);
 

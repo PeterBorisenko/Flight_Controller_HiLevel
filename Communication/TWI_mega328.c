@@ -6,51 +6,6 @@
  *  Author: Disgust
  */ 
 
-// TWSR values (not bits)
-
-// Master
-#define TW_START					0x08
-#define TW_REP_START				0x10
-// Master Transmitter
-#define TW_MT_SLA_ACK				0x18
-#define TW_MT_SLA_NACK				0x20
-#define TW_MT_DATA_ACK				0x28
-#define TW_MT_DATA_NACK				0x30
-#define TW_MT_ARB_LOST				0x38
-// Master Receiver
-#define TW_MR_ARB_LOST				0x38
-#define TW_MR_SLA_ACK				0x40
-#define TW_MR_SLA_NACK				0x48
-#define TW_MR_DATA_ACK				0x50
-#define TW_MR_DATA_NACK				0x58
-// Slave Transmitter
-#define TW_ST_SLA_ACK				0xA8
-#define TW_ST_ARB_LOST_SLA_ACK		0xB0
-#define TW_ST_DATA_ACK				0xB8
-#define TW_ST_DATA_NACK				0xC0
-#define TW_ST_LAST_DATA				0xC8
-// Slave Receiver
-#define TW_SR_SLA_ACK				0x60
-#define TW_SR_ARB_LOST_SLA_ACK		0x68
-#define TW_SR_GCALL_ACK				0x70
-#define TW_SR_ARB_LOST_GCALL_ACK	0x78
-#define TW_SR_DATA_ACK				0x80
-#define TW_SR_DATA_NACK				0x88
-#define TW_SR_GCALL_DATA_ACK		0x90
-#define TW_SR_GCALL_DATA_NACK		0x98
-#define TW_SR_STOP					0xA0
-// Misc
-#define TW_NO_INFO					0xF8
-#define TW_BUS_ERROR				0x00
-
-// defines and constants
-#define TWCR_CMD_MASK		0x0F
-#define TWSR_STATUS_MASK	0xF8
-
-// return values
-#define I2C_OK				0x00
-#define I2C_ERROR_NODEV		0x01
-
 /*
  * \brief Initializes the I2C communication peripheral.
  *
@@ -60,11 +15,11 @@
  *                  Example: 1 - if initialization was successful;
  *                           0 - if initialization was unsuccessful.
  */
-uint8_t TWI_Init(uint64_t clockFreq)
+unsigned char TWI_Init(unsigned long clockFreq)
 {
-    uint8_t   status      = 1;
-    uint64_t   pbFrequency = 80000000;
-    uint16_t  brgValue    = 0;
+    unsigned char   status      = 1;
+    unsigned long   pbFrequency = 80000000;
+    unsigned short  brgValue    = 0;
 
 //    I2C1CON = 0;                /*!< Clear the content of I2C1CON register */
     /*! Fsck = Fpb / ((I2CxBRG + 2) * 2) */
@@ -76,8 +31,6 @@ uint8_t TWI_Init(uint64_t clockFreq)
 	
     return status;
 }
-
-// Low-level commands
 
 /**
   * \ Sets start condition
@@ -156,8 +109,6 @@ uint8_t TWIbyteRead()
     return 0;
 }
 
-
-// Hi-level commands
 
  /**
   * \brief 
