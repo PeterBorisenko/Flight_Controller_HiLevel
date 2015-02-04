@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <avr/io.h>
-#include "Macro.h"
+#include "../Macro.h"
 
 #define WITHOUT_CHECKS 1
 
@@ -27,7 +27,7 @@
 
 // Functions
 
-unsigned char TWI_Init(unsigned long)
+uint8_t TWI_Init(uint64_t)
 
 void TWIslaveRead(uint8_t);
 
