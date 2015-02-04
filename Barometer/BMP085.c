@@ -35,7 +35,7 @@ uint16_t BMP085ReadShort(uint8_t address) {
 	return data;
 }
 
-uint16_t BMP085ReadTemp(void) {
+uint64_t BMP085ReadTemp(void) {
 	TWIstart();
 	
 	TWIbyteWrite(BMP085_W);	// write SLA_W
@@ -47,7 +47,7 @@ uint16_t BMP085ReadTemp(void) {
 	return BMP085ReadShort(0xF6);
 }
 
-uint16_t BMP085ReadPressure(void) {
+uint64_t BMP085ReadPressure(void) {
 	uint16_t pressure = 0;
 	
 	TWIstart();

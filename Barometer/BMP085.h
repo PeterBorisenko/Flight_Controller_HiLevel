@@ -47,9 +47,9 @@ typedef struct {
 void BMP085Calibration(void);
 
 ///============I2C Prototypes=============//////////////////
-int16_t BMP085ReadShort(uint8_t);
-int64_t BMP085ReadTemp(void);
-int64_t BMP085ReadPressure(void);
+uint16_t BMP085ReadShort(uint8_t);
+uint64_t BMP085ReadTemp(void);
+uint64_t BMP085ReadPressure(void);
 void BMP085Convert(Baro_t *);
 void BMP085CalculateAltitude(Baro_t *);
 
