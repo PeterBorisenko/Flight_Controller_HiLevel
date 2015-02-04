@@ -60,11 +60,11 @@
  *                  Example: 1 - if initialization was successful;
  *                           0 - if initialization was unsuccessful.
  */
-unsigned char TWI_Init(unsigned long clockFreq)
+uint8_t TWI_Init(uint64_t clockFreq)
 {
-    unsigned char   status      = 1;
-    unsigned long   pbFrequency = 80000000;
-    unsigned short  brgValue    = 0;
+    uint8_t   status      = 1;
+    uint64_t   pbFrequency = 80000000;
+    uint16_t  brgValue    = 0;
 
 //    I2C1CON = 0;                /*!< Clear the content of I2C1CON register */
     /*! Fsck = Fpb / ((I2CxBRG + 2) * 2) */
