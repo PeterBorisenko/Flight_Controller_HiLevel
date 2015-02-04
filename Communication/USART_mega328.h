@@ -9,6 +9,8 @@
 #ifndef USART_MEGA328_H_
 #define USART_MEGA328_H_
 
+#include <stdint.h>
+
 //#define BAUD_DOUBLE
 
 #ifndef BAUD_DOUBLE
