@@ -45,3 +45,13 @@ void tmr1SetOCRA(uint8_t dat) {
 void tmr1SetOCRB(uint8_t dat) {
 	OCR1B= dat;
 }
+
+void tmr1NoiseCancelerOn()
+{
+	TCCR1B|= (1 << ICNC1);
+}
+
+void tmr1NoiseCancelerOff()
+{
+	TCCR1B&= ~(1 << ICNC1);
+}

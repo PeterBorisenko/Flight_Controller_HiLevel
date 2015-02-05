@@ -25,3 +25,6 @@ void tmr1OutMode(uint8_t);
 void tmr1SetOCRA(uint8_t);
 
 void tmr1SetOCRB(uint8_t);
+
+void tmr1NoiseCancelerOn();
+void tmr1NoiseCancelerOff();

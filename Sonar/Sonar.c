@@ -3,7 +3,8 @@
 #include "../Timer1_mega328.h"
 #include <avr/io.h>
 
-#define SONAR_TIME_CALC(x) (x)
+#define SONAR_MULT	(SONAR_TMR_PSK/F_CPU)
+#define SONAR_TIME_CALC(x) (x*SONAR_MULT)
 #define SONAR_RANGE_CALC(x)	(x/(29)/2)
 
 
@@ -23,6 +24,7 @@ void dirTgl() {
 ********************************************************/
 void sonarInit(uint8_t mode) {
 	tmr1SetOCRA(SONAR_ARM_TIME);
+	tmr1NoiseCancelerOn();
 	tmr1IntOn(OCIE1A);
 	tmr1IntOn(TOIE1);
 	tmr1IntOn(OCIE1A);
