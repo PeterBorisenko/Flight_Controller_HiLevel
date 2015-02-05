@@ -10,6 +10,8 @@
 #define USART_MEGA328_H_
 
 #include <stdint.h>
+#include <avr/io.h>
+#include "../Macro.h"
 
 //#define BAUD_DOUBLE
 

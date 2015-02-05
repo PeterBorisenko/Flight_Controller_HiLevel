@@ -33,6 +33,7 @@
 // constants
 #define PI		3.14159265359
 
+// Platform dependent
 #ifdef __XC8
 
 #elif defined IO_H

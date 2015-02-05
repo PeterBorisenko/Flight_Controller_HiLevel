@@ -5,7 +5,6 @@
  *  Author: Disgust
  */ 
 
-#include <avr/io.h>
 #include "USART_mega328.h"
 
  void prepareUSART(uint16_t ubrr)
