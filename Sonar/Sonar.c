@@ -22,8 +22,7 @@ void dirTgl() {
 *
 ********************************************************/
 void sonarInit(uint8_t mode) {
-	// timer1 init
-	OCR1A= SONAR_ARM_TIME;
+	tmr1SetOCRA(SONAR_ARM_TIME);
 	tmr1IntOn(OCIE1A);
 	tmr1IntOn(TOIE1);
 	tmr1IntOn(OCIE1A);
@@ -35,7 +34,6 @@ void sonarArm() {
 	BIT_set(SONAR_DIR, SONAR_PIN);
 	BIT_set(SONAR_PORT, SONAR_PIN);
 	tmr1SetMode(TMR1_CTC_MODE);
-	sonarArmTimerStart();
 	tmr1Start(SONAR_TMR_PSK);
 }
 
@@ -98,7 +96,7 @@ void sonarIncreaseCycles() {
 		cycleBuffer++;
 	}
 	else {
+		sonarCaptureStop();
 		sonar_state= SONAR_FAULT;
-		// TODO: abort capture
 	}
 }
