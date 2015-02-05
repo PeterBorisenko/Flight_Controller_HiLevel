@@ -20,10 +20,8 @@
 
 void initOsc();
 void setPowerReduction();
-void prepareTimer(uint8_t, uint8_t, uint8_t);
 void prepareSystem();
 void prepareCompass();
 void prepareSonar();
-void prepareGPS();
 void prepareRF();
 #endif /*SYSTEM_H*/

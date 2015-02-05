@@ -19,39 +19,6 @@ void prepareSystem()
  void setPowerReduction() {
      PRR|= (1 << PRTIM0)|(1 << PRTIM2)|(1 << PRSPI);
  }
-
- void prepareTimer(uint8_t tmr, uint8_t mode, uint8_t prescaler)
- {
-     switch (tmr)
-     {
-         case 0x00:
-         TCCR0A= 0x00;
-         TCCR0B= (0x00 | prescaler);
-         OCR0A= 0x00;
-         OCR0B= 0x00;
-         TIMSK0= 0x07; //Enable all three timer interrupts
-         TIFR0= 0x07; // Reset timer interrupts
-         break;
-
-         case 0x01:
-		 TCCR1A= 0x00;
-		 TCCR1B= (0x00 | prescaler);
-		 OCR1A= 0x00;
-		 OCR1B= 0x00;
-		 TIMSK1= 0x07; //Enable all three timer interrupts
-		 TIFR1= 0x07; // Reset timer interrupts
-         break;
-
-         case 0x02:
-         TCCR2A= 0x00;
-         TCCR2B= (0x00 | prescaler);
-         OCR2A= 0x00;
-         OCR2B= 0x00;
-         TIMSK2= 0x07;
-         TIFR2= 0x07; // Reset timer interrupts
-         break;
-     }
- }
  
  void prepareCompass() {
 	 
@@ -59,10 +26,6 @@ void prepareSystem()
 
  void prepareSonar() {
 	 sonarInit(USE_INTERRUPT);
- }
-
- void prepareGPS() {
-	 
  }
 
  void prepareRF() {

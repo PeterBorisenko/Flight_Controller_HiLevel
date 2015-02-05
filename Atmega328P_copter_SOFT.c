@@ -80,3 +80,7 @@ ISR(TIMER1_CAPT_vect) {
 ISR(TIMER1_COMPA_vect) {
 	sonarArmHandler();
 }
+
+ISR(PCINT0_vect) {
+	// TODO: Software USART RX
+}
