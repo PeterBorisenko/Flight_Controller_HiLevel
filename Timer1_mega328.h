@@ -21,3 +21,7 @@ void tmr1Stop();
 void tmr1Flush();
 
 void tmr1OutMode(uint8_t);
+
+void tmr1SetOCRA(uint8_t);
+
+void tmr1SetOCRB(uint8_t);

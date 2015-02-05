@@ -37,3 +37,11 @@ void tmr1Flush() {
 void tmr1OutMode(uint8_t mode) {
 	
 }
+
+void tmr1SetOCRA(uint8_t dat) {
+	OCR1A= dat;
+}
+
+void tmr1SetOCRB(uint8_t dat) {
+	OCR1B= dat;
+}
