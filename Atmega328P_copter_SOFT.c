@@ -41,6 +41,9 @@ void getAltitude() {
 void main(void)
 {
 	prepareSystem();
+	prepareRF();
+	prepareSonar();
+	prepareCompass();
 	
     while(1)
     {
