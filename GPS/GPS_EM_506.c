@@ -22,9 +22,9 @@ uint8_t allBitsXor(uint8_t dat) {
 
 // GPS Write commands
 
-void GPSsetSerialPort(GPScommand100_t * buf) {
+void GPSsetSerialPort(GPSsetSerialPort_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
-				(allBitsXor(buf->baud[gpsBaudLength]) << 3)|(allBitsXor(buf->dataBits) << 2)|(allBitsXor(buf->stopBits) << 1)|(allBitsXor(buf->parity));
+				(allBitsXor(GPSbaud[gpsBaudLength - 1]) << 3)|(allBitsXor(buf->dataBits) << 2)|(allBitsXor(buf->stopBits) << 1)|(allBitsXor(buf->parity));
 
 	uint8_t ch1= HEX_TO_ASCII(HI(ch));
 	uint8_t ch2= HEX_TO_ASCII(LO(ch));
@@ -41,7 +41,7 @@ void GPSsetSerialPort(GPScommand100_t * buf) {
 	SSsendChar(buf->proto);
 	for (uint8_t i= 0; i < gpsBaudLength; i++)
 	{
-		SSsendChar(buf->baud[i]);
+		SSsendChar(GPSbaud[i]);
 	}
 	SSsendChar(buf->dataBits);
 	SSsendChar(buf->stopBits);
@@ -54,7 +54,7 @@ void GPSsetSerialPort(GPScommand100_t * buf) {
 	SSsendChar(0x0A);
 }
 
-void GPSinitNav(GPSnavInit_t * buf) {
+void GPSinitNav(GPSinitNav_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
 	(allBitsXor((uint8_t)buf->weekNo >> 8) << 3)|(allBitsXor((uint8_t)buf->weekNo) << 2)|(allBitsXor(buf->chnlCount) << 1)|(allBitsXor(buf->resetCfg));
 
@@ -157,7 +157,7 @@ void GPSsetQueryRateCtl(GPSsetQueryRateCtl_t * buf) {
 	SSsendChar(0x0A);
 }
 
-void GPSllaNavInit(GPScommand104_t * buf) {
+void GPSllaNavInit(GPSinitLlaNav_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
 				(allBitsXor((uint8_t)buf->weekNo >> 8) << 3)|(allBitsXor((uint8_t)buf->weekNo) << 2)|(allBitsXor(buf->channelCount) << 1)|(allBitsXor(buf->resetCfg));
 
@@ -205,7 +205,7 @@ void GPSllaNavInit(GPScommand104_t * buf) {
 	SSsendChar(0x0A);
 }
 
-void GPStglDevData(GPScommand105_t * buf) {
+void GPStglDevData(GPStglDevData_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
 	(allBitsXor('1') << 3)|(allBitsXor('0') << 2)|(allBitsXor('5') << 1)|(allBitsXor(buf->debug));
 
@@ -230,7 +230,7 @@ void GPStglDevData(GPScommand105_t * buf) {
 	SSsendChar(0x0A);
 }
 
-void GPSselDatum(GPScommand106_t * buf) {
+void GPSselDatum(GPSselDatum_t * buf) {
 	uint8_t ch= (allBitsXor('P') << 7)|(allBitsXor('S') << 6)|(allBitsXor('R') << 5)|(allBitsXor('F') << 4)|\
 	(allBitsXor('1') << 3)|(allBitsXor('0') << 2)|(allBitsXor('6') << 1)|(allBitsXor(buf->datum));
 
@@ -256,6 +256,8 @@ void GPSselDatum(GPScommand106_t * buf) {
 }
 
 // GPS Read commands
+
+
 
 #ifdef _EXAMPLES_
 
@@ -295,9 +297,9 @@ void GPSselDatum(GPScommand106_t * buf) {
 		}
 	}
 	
+	
 	NMEA gps(GPRMC);  // GPS data connection to GPRMC sentence type
 	float d;          // relative direction to destination
-
 	// destination coordinates in degrees-decimal
 	float dest_latitude = 48.858342;
 	float dest_longitude = 2.294522;
