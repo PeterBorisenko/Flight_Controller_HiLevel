@@ -45,7 +45,8 @@ void sonarCaptureStart() {
 
 void sonarCaptureStop() {
 	tmr1Stop();
-	add= ICR1;
+	add= TCNT1;
+	tmr1Flush();
 	sonar_state= SONAR_READY;
 }
 
@@ -86,7 +87,7 @@ void sonarCaptureHandler() {
 			sonarCaptureStop();
 			break;
 		case SONAR_STARTED:
-			sub= ICR1;
+			sub= TCNT1;
 			sonar_state= SONAR_RUNNING;
 			break;
 	}
