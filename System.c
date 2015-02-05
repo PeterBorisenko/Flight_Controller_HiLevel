@@ -7,16 +7,17 @@
 
 #include "System.h"
 
+
 void prepareSystem()
 {
     WDTCSR|= (1 << WDE)|(1 << WDIE);
     //WDTCSR|=(0b111 << WDP0);
-	//initOSC();
+	initOsc();
     setPowerReduction();
 }
 
  void setPowerReduction() {
-     PRR|= (1 << PRTIM1)|(1 << PRSPI)|(1 << PRADC);
+     PRR|= (1 << PRTIM0)|(1 << PRTIM2)|(1 << PRSPI);
  }
 
  void prepareTimer(uint8_t tmr, uint8_t mode, uint8_t prescaler)
@@ -52,4 +53,27 @@ void prepareSystem()
      }
  }
  
+ void prepareCompass() {
+	 
+ }
+
+ void prepareSonar() {
+	 sonarInit(USE_INTERRUPT);
+ }
+
+ void prepareGPS() {
+	 
+ }
+
+ void prepareRF() {
+	 
+ }
+
+ void prepareBarometer() {
+	 BMP085Calibration();
+ }
+ 
+ void initOsc() {
+ 	
+}
  
