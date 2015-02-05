@@ -14,17 +14,10 @@
 #include <math.h>
 /*#include <avr/delay.h>*/
 
-
 #include "Macro.h"
 #include "Assign.h"
 #include "System.h"
 #include "Communication.h"
-#include "Barometer/BMP085.h"
-//#include <Sonar/>
-#include "Compass/LSM303D.h"
-#include "GPS/GPS_EM_506.h"
-#include "Proximity.h"
-//#include "RC/"
 
 volatile uint8_t transmitByteCount= DATA_WIDTH;
 
@@ -39,22 +32,6 @@ typedef struct {
 
 volatile static Required_t * Required;
 Baro_t * Baro;
-
-void prepareCompass() {
-	
-}
-
-void prepareGPS() {
-	
-}
-
-void prepareRF() {
-	
-}
-
-void prepareBarometer() {
-	BMP085Calibration();
-}
 
 void getAltitude() {
 	BMP085Convert(Baro);
@@ -71,16 +48,12 @@ void main(void)
     }
 }
 
-ISR(TIMER0_OVF_vect){
+ISR(TIMER0_OVF_vect){ // System TIMER
+	// TODO: Call Task Manager from here
 
 }
 
 ISR(TIMER2_OVF_vect){
-
-}
-
-ISR(TIMER1_OVF_vect){ // System TIMER
-	// TODO: Call Task Manager from here
 
 }
 
@@ -94,4 +67,16 @@ ISR (USART_RX_vect) {
 
 ISR(WDT_vect) {
 	
+}
+
+ISR(TIMER1_OVF_vect) {
+	sonarIncreaseCycles();
+}
+
+ISR(TIMER1_CAPT_vect) {
+	sonarCaptureHandler();
+}
+
+ISR(TIMER1_COMPA_vect) {
+	sonarArmHandler();
 }
