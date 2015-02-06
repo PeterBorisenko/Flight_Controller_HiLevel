@@ -73,7 +73,7 @@ ISR(WDT_vect) {
 }
 
 ISR(TIMER1_OVF_vect) {
-	sonarIncreaseCycles();
+	sonarOutOfRange();
 }
 
 ISR(TIMER1_CAPT_vect) {
