@@ -3,9 +3,10 @@
 #include "../Timer1_mega328.h"
 #include <avr/io.h>
 
-#define SONAR_MULT	(SONAR_TMR_PSK/F_CPU)
+#define SONAR_MULT	(SONAR_TMR_PSK/F_CPU) // Time per Tmr tick
+#define SONAR_RES	(SONAR_MULT*SPEED_OF_SOUND/2) // Minimum range
 #define SONAR_TIME_CALC(x) (x*SONAR_MULT)
-#define SONAR_RANGE_CALC(x)	(x/(29)/2)
+#define SONAR_RANGE_CALC(x)	(x*SONAR_RES)
 
 
 /*******************************************************
@@ -29,22 +30,24 @@ void sonarInit(uint8_t mode) {
 	tmr1IntOn(TOIE1);
 	tmr1IntOn(OCIE1A);
 	tmr1Flush();
+	BIT_set(SONAR_DIR, SONAR_PIN);
+	BIT_clear(SONAR_PORT, SONAR_PIN);
 }
 
 void sonarArm() {
 	sonar_state= SONAR_STARTED;
-	BIT_set(SONAR_DIR, SONAR_PIN);
 	BIT_set(SONAR_PORT, SONAR_PIN);
 	tmr1SetMode(TMR1_CTC_MODE);
-	tmr1Start(SONAR_TMR_PSK);
+	tmr1Start(SONAR_TMR_PSC);
 }
 
 void sonarCaptureStart() {
-	tmr1Start(SONAR_TMR_PSK); // Timer start
+	tmr1Start(SONAR_TMR_PSC); // Timer start
 }
 
 void sonarCaptureStop() {
 	tmr1Stop();
+	dirTgl();
 	add= TCNT1;
 	tmr1Flush();
 	sonar_state= SONAR_READY;
@@ -56,14 +59,13 @@ void sonarCaptureStop() {
 *
 ********************************************************/
 
-uint32_t sonarGetWidth() {
-	uint32_t temp= (0xFFFF * cycleBuffer);
-	return (temp + add - sub);
+uint16_t sonarGetWidth() {
+	return (add - sub);
 }
 
-uint32_t sonarGetRange() {
-	uint32_t result;
-	result= SONAR_RANGE_CALC(SONAR_TIME_CALC(sonarGetWidth()));
+uint16_t sonarGetRange() {
+	uint16_t result;
+	result= SONAR_RANGE_CALC();
 	sonar_state= SONAR_IDLE;
 	return result;
 }
@@ -93,13 +95,7 @@ void sonarCaptureHandler() {
 	}
 }
 
-void sonarIncreaseCycles() {
-	if (cycleBuffer < SONAR_TIMEOUT)
-	{
-		cycleBuffer++;
-	}
-	else {
-		sonarCaptureStop();
-		sonar_state= SONAR_FAULT;
-	}
+void sonarOutOfRange() {
+	sonarCaptureStop();
+	sonar_state= SONAR_OUT_OF_RANGE;
 }

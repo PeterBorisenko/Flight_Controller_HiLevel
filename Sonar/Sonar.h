@@ -28,17 +28,18 @@ volatile static uint8_t sonar_state;
 #define	SONAR_READY			0x01
 #define SONAR_RUNNING		0x02
 #define SONAR_STARTED		0x03
+#define SONAR_OUT_OF_RANGE	0xFE
 #define SONAR_FAULT			0xFF
 
 #define DONT_USE_INTERRUPTS	0x00
 #define USE_INTERRUPT		0x01
-#define SONAR_TIMEOUT		0xFF // 16-bit cycles
 
-#define SONAR_TMR_PSK		0x05
-#define SONAR_ARM_TIME		0x0F
+
+#define SONAR_TMR_PSC		0x02	// PSC 64
+#define SONAR_ARM_TIME		0x01
+#define SPEED_OF_SOUND		(343.2)
 
 // Variables
-volatile static uint8_t cycleBuffer;
 volatile static uint16_t sub;
 volatile static uint16_t add;
 
@@ -50,9 +51,8 @@ void sonarCaptureStart();
 void sonarCaptureStop();
 uint32_t sonarGetWidth();
 uint32_t sonarGetRange();
-void sonarIncreaseCycles();
 void sonarArmHandler();
 void sonarCaptureHandler();
-
+void sonarOutOfRange();
 
 #endif /* SONAR_H_ */
