@@ -21,11 +21,19 @@
 #define RECEIVE_X   0x03
 #define RECEIVE_Y   0x04
 #define RECEIVE_Z   0x05
+#define RECEIVE_ROT	0x06
+#define RECEIVE_RSP	0x07
+#define USART_ASKED	0x10
+#define USART_ASKS	0x11
+#define SEND_STAT	0x12
 
-// Frame parts
+// Message parts
 #define HEADER      0x1010
-#define ACK         0x05
-#define NACK        0x11
+#define ACK         0x20
+#define NACK        0x21
+#define ARMED		0x30
+#define FAULT		0x31
+#define ASK_STATUS	0x32
 
 typedef int16_t vect_t;
 #define DATA_WIDTH 2
