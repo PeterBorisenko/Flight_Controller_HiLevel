@@ -1,277 +1,232 @@
-/******************** (C) COPYRIGHT 2013 STMicroelectronics *******************
-*
-* File Name          : lsm303d.h
-* Authors            : AMS - MSH Div - Application Team
-*		     : Matteo Dameno (matteo.dameno@st.com)
-*		     : Denis Ciocca (denis.ciocca@st.com)
-* Version            : V.1.0.5
-* Date               : 2013/Oct/23
-*
-*******************************************************************************
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License version 2 as
-* published by the Free Software Foundation.
-*
-* THE PRESENT SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES
-* OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, FOR THE SOLE
-* PURPOSE TO SUPPORT YOUR APPLICATION DEVELOPMENT.
-* AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY DIRECT,
-* INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
-* CONTENT OF SUCH SOFTWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
-* INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-*
-******************************************************************************/
 
 #ifndef	__LSM303D_H__
 #define	__LSM303D_H__
 
 #include <stdint.h>
+#include <stdbool.h>
+#include "../Macro.h"
+#include "../Assign.h"
+#include "../Communication.h"
 
-#define	LSM303D_DEV_NAME	"LSM303D"
-#define	LSM303D_ACC_DEV_NAME	"LSM303D_A"	/* Input file name */
-#define	LSM303D_MAG_DEV_NAME	"LSM303D_M"	/* Input file name */
+#define D_SA0_HIGH_ADDRESS                0b0011101
+#define D_SA0_LOW_ADDRESS                 0b0011110
+#define DLHC_DLM_DLH_MAG_ADDRESS          0b0011110
+#define DLHC_DLM_DLH_ACC_SA0_HIGH_ADDRESS 0b0011001
+#define DLM_DLH_ACC_SA0_LOW_ADDRESS       0b0011000
 
-#define LSM303D_SAD0L			(0x02)
-#define LSM303D_SAD0H			(0x01)
-#define LSM303D_I2C_SADROOT		(0x07)
-#define LSM303D_I2C_SAD_L		((LSM303D_I2C_SADROOT<<2) | \
-								LSM303D_SAD0L)
-#define LSM303D_I2C_SAD_H		((LSM303D_I2C_SADROOT<<2) | \
-								LSM303D_SAD0H)
+#define TEST_REG_ERROR -1
 
-/************************************************/
-/* 	Output data			 	*/
-/*************************************************
-accelerometer: ug
-magnetometer: ugauss
-*************************************************/
+#define D_WHO_ID    0x49
+#define DLM_WHO_ID  0x3C
 
-/************************************************/
-/* 	sysfs data			 	*/
-/*************************************************
-accelerometer:
-	- pollrate->ms
-	- fullscale->g
-magnetometer:
-	- pollrate->ms
-	- fullscale->gauss
-*************************************************/
+enum deviceType { device_DLH, device_DLM, device_DLHC, device_D, device_auto };
+enum sa0State { sa0_low, sa0_high, sa0_auto };
 
-/************************************************/
-/* 	Accelerometer section defines	 	*/
-/************************************************/
+typedef struct {
+	vect_t a; // accelerometer readings
+	vect_t m; // magnetometer readings
+} LSM303D_Reading_t;
 
-/* Accelerometer Sensor Full Scale */
-#define	LSM303D_ACC_FS_MASK	(0x18)
-#define LSM303D_ACC_FS_2G 	(0x00)	/* Full scale 2g */
-#define LSM303D_ACC_FS_4G 	(0x08)	/* Full scale 4g */
-#define LSM303D_ACC_FS_8G 	(0x10)	/* Full scale 8g */
-#define LSM303D_ACC_FS_16G	(0x18)	/* Full scale 16g */
+typedef struct {
+	float heading;
+} LSM303D_Heading_t;
 
-/* Accelerometer Anti-Aliasing Filter */
-#define ANTI_ALIASING_773	(0X00)
-#define ANTI_ALIASING_362	(0X40)
-#define ANTI_ALIASING_194	(0X80)
-#define ANTI_ALIASING_50	(0XC0)
+typedef struct {
+	deviceType _device; // chip type (D, DLHC, DLM, or DLH)
+	uint8_t acc_address;
+	uint8_t mag_address;
+	uint32_t io_timeout;
+	uint8_t did_timeout;
+	LSM303D_Reading_t reading;
+	LSM303D_Heading_t heading;
+} LSM303_t;
 
-/************************************************/
-/* 	Magnetometer section defines	 	*/
-/************************************************/
+// register addresses
+enum regAddr
+{
+	TEMP_OUT_L        = 0x05, // D
+	TEMP_OUT_H        = 0x06, // D
 
-/* Magnetometer Sensor Full Scale */
-#define LSM303D_MAG_FS_MASK	(0x60)
-#define LSM303D_MAG_FS_2G	(0x00)	/* Full scale 2 gauss */
-#define LSM303D_MAG_FS_4G	(0x20)	/* Full scale 4 gauss */
-#define LSM303D_MAG_FS_8G	(0x40)	/* Full scale 8 gauss */
-#define LSM303D_MAG_FS_12G	(0x60)	/* Full scale 12 gauss */
+	STATUS_M          = 0x07, // D
+
+	INT_CTRL_M        = 0x12, // D
+	INT_SRC_M         = 0x13, // D
+	INT_THS_L_M       = 0x14, // D
+	INT_THS_H_M       = 0x15, // D
+
+	OFFSET_X_L_M      = 0x16, // D
+	OFFSET_X_H_M      = 0x17, // D
+	OFFSET_Y_L_M      = 0x18, // D
+	OFFSET_Y_H_M      = 0x19, // D
+	OFFSET_Z_L_M      = 0x1A, // D
+	OFFSET_Z_H_M      = 0x1B, // D
+	REFERENCE_X       = 0x1C, // D
+	REFERENCE_Y       = 0x1D, // D
+	REFERENCE_Z       = 0x1E, // D
+
+	CTRL0             = 0x1F, // D
+	CTRL1             = 0x20, // D
+	CTRL_REG1_A       = 0x20, // DLH, DLM, DLHC
+	CTRL2             = 0x21, // D
+	CTRL_REG2_A       = 0x21, // DLH, DLM, DLHC
+	CTRL3             = 0x22, // D
+	CTRL_REG3_A       = 0x22, // DLH, DLM, DLHC
+	CTRL4             = 0x23, // D
+	CTRL_REG4_A       = 0x23, // DLH, DLM, DLHC
+	CTRL5             = 0x24, // D
+	CTRL_REG5_A       = 0x24, // DLH, DLM, DLHC
+	CTRL6             = 0x25, // D
+	CTRL_REG6_A       = 0x25, // DLHC
+	HP_FILTER_RESET_A = 0x25, // DLH, DLM
+	CTRL7             = 0x26, // D
+	REFERENCE_A       = 0x26, // DLH, DLM, DLHC
+	STATUS_A          = 0x27, // D
+	STATUS_REG_A      = 0x27, // DLH, DLM, DLHC
+
+	OUT_X_L_A         = 0x28,
+	OUT_X_H_A         = 0x29,
+	OUT_Y_L_A         = 0x2A,
+	OUT_Y_H_A         = 0x2B,
+	OUT_Z_L_A         = 0x2C,
+	OUT_Z_H_A         = 0x2D,
+
+	FIFO_CTRL         = 0x2E, // D
+	FIFO_CTRL_REG_A   = 0x2E, // DLHC
+	FIFO_SRC          = 0x2F, // D
+	FIFO_SRC_REG_A    = 0x2F, // DLHC
+
+	IG_CFG1           = 0x30, // D
+	INT1_CFG_A        = 0x30, // DLH, DLM, DLHC
+	IG_SRC1           = 0x31, // D
+	INT1_SRC_A        = 0x31, // DLH, DLM, DLHC
+	IG_THS1           = 0x32, // D
+	INT1_THS_A        = 0x32, // DLH, DLM, DLHC
+	IG_DUR1           = 0x33, // D
+	INT1_DURATION_A   = 0x33, // DLH, DLM, DLHC
+	IG_CFG2           = 0x34, // D
+	INT2_CFG_A        = 0x34, // DLH, DLM, DLHC
+	IG_SRC2           = 0x35, // D
+	INT2_SRC_A        = 0x35, // DLH, DLM, DLHC
+	IG_THS2           = 0x36, // D
+	INT2_THS_A        = 0x36, // DLH, DLM, DLHC
+	IG_DUR2           = 0x37, // D
+	INT2_DURATION_A   = 0x37, // DLH, DLM, DLHC
+
+	CLICK_CFG         = 0x38, // D
+	CLICK_CFG_A       = 0x38, // DLHC
+	CLICK_SRC         = 0x39, // D
+	CLICK_SRC_A       = 0x39, // DLHC
+	CLICK_THS         = 0x3A, // D
+	CLICK_THS_A       = 0x3A, // DLHC
+	TIME_LIMIT        = 0x3B, // D
+	TIME_LIMIT_A      = 0x3B, // DLHC
+	TIME_LATENCY      = 0x3C, // D
+	TIME_LATENCY_A    = 0x3C, // DLHC
+	TIME_WINDOW       = 0x3D, // D
+	TIME_WINDOW_A     = 0x3D, // DLHC
+
+	Act_THS           = 0x3E, // D
+	Act_DUR           = 0x3F, // D
+
+	CRA_REG_M         = 0x00, // DLH, DLM, DLHC
+	CRB_REG_M         = 0x01, // DLH, DLM, DLHC
+	MR_REG_M          = 0x02, // DLH, DLM, DLHC
+
+	SR_REG_M          = 0x09, // DLH, DLM, DLHC
+	IRA_REG_M         = 0x0A, // DLH, DLM, DLHC
+	IRB_REG_M         = 0x0B, // DLH, DLM, DLHC
+	IRC_REG_M         = 0x0C, // DLH, DLM, DLHC
+
+	WHO_AM_I          = 0x0F, // D
+	WHO_AM_I_M        = 0x0F, // DLM
+
+	TEMP_OUT_H_M      = 0x31, // DLHC
+	TEMP_OUT_L_M      = 0x32, // DLHC
 
 
-#define	LSM303D_ACC_MIN_POLL_PERIOD_MS	1
-#define LSM303D_MAG_MIN_POLL_PERIOD_MS	5
+	// dummy addresses for registers in different locations on different devices;
+	// the library translates these based on device type
+	// value with sign flipped is used as index into translated_regs array
 
-#define	I2C_AUTO_INCREMENT	(0x80)
-#define MS_TO_NS(x)		(x*1000000L)
+	OUT_X_H_M         = -1,
+	OUT_X_L_M         = -2,
+	OUT_Y_H_M         = -3,
+	OUT_Y_L_M         = -4,
+	OUT_Z_H_M         = -5,
+	OUT_Z_L_M         = -6,
+	// update dummy_reg_count if registers are added here!
 
-#define	ACC_G_MAX_POS		1495040	/** max positive value acc [ug] */
-#define	ACC_G_MAX_NEG		1495770	/** max negative value acc [ug] */
-#define	MAG_G_MAX_POS		983520	/** max positive value mag [ugauss] */
-#define	MAG_G_MAX_NEG		983040	/** max negative value mag [ugauss] */
+	// device-specific register addresses
 
-#define FUZZ			0
-#define FLAT			0
+	DLH_OUT_X_H_M     = 0x03,
+	DLH_OUT_X_L_M     = 0x04,
+	DLH_OUT_Y_H_M     = 0x05,
+	DLH_OUT_Y_L_M     = 0x06,
+	DLH_OUT_Z_H_M     = 0x07,
+	DLH_OUT_Z_L_M     = 0x08,
 
-/* Address registers */
-#define REG_WHOAMI_ADDR		(0x0F)	/** Who am i address register */
-#define REG_CNTRL0_ADDR		(0x1F)	/** CNTRL0 address register */
-#define REG_CNTRL1_ADDR		(0x20)	/** CNTRL1 address register */
-#define REG_CNTRL2_ADDR		(0x21)	/** CNTRL2 address register */
-#define REG_CNTRL3_ADDR		(0x22)	/** CNTRL3 address register */
-#define REG_CNTRL4_ADDR		(0x23)	/** CNTRL4 address register */
-#define REG_CNTRL5_ADDR		(0x24)	/** CNTRL5 address register */
-#define REG_CNTRL6_ADDR		(0x25)	/** CNTRL6 address register */
-#define REG_CNTRL7_ADDR		(0x26)	/** CNTRL7 address register */
+	DLM_OUT_X_H_M     = 0x03,
+	DLM_OUT_X_L_M     = 0x04,
+	DLM_OUT_Z_H_M     = 0x05,
+	DLM_OUT_Z_L_M     = 0x06,
+	DLM_OUT_Y_H_M     = 0x07,
+	DLM_OUT_Y_L_M     = 0x08,
 
-#define REG_ACC_DATA_ADDR	(0x28)	/** Acc. data low address register */
-#define REG_MAG_DATA_ADDR	(0x08)	/** Mag. data low address register */
-#define REG_TEMP_DATA_ADDR	(0x05)	/** Temp. data low address register */
+	DLHC_OUT_X_H_M    = 0x03,
+	DLHC_OUT_X_L_M    = 0x04,
+	DLHC_OUT_Z_H_M    = 0x05,
+	DLHC_OUT_Z_L_M    = 0x06,
+	DLHC_OUT_Y_H_M    = 0x07,
+	DLHC_OUT_Y_L_M    = 0x08,
 
-#define REG_GEN_MAG_ADDR	(0x12)	/** INT_CTRL_REG_M address register */
-#define INT_SRC_REG_M_ADDR	(0x13)	/** INT_SRC_REG_M address register */
-#define REG_GEN_MAG_THR_ADDR	(0x14)	/** INT_THS_L_M address register */
-#define MIG_THRESHOLD_ADDR_H	(0x15)	/** INT_THS_H_M address register */
-#define REG_GEN1_AXIS_ADDR	(0x30)	/** INT_GEN1_REG address register */
-#define INT_GEN1_SRC_ADDR	(0x31)	/** INT_GEN1_SRC address register */
-#define REG_GEN1_THR_ADDR	(0x32)	/** INT_GEN1_THS address register */
-#define REG_GEN1_DUR_ADDR	(0x33)	/** INT_GEN1_DUR address register */
-#define REG_GEN2_AXIS_ADDR	(0x34)	/** INT_GEN2_REG address register */
-#define INT_GEN2_SRC_ADDR	(0x35)	/** INT_GEN2_SRC address register */
-#define REG_GEN2_THR_ADDR	(0x36)	/** INT_GEN2_THS address register */
-#define REG_GEN2_DUR_ADDR	(0x37)	/** INT_GEN2_DUR address register */
-
-/* Sensitivity */
-#define SENSITIVITY_ACC_2G	60	/**	ug/LSB	*/
-#define SENSITIVITY_ACC_4G	120	/**	ug/LSB	*/
-#define SENSITIVITY_ACC_8G	240	/**	ug/LSB	*/
-#define SENSITIVITY_ACC_16G	730	/**	ug/LSB	*/
-
-#define SENSITIVITY_MAG_2G	80	/**	ugauss/LSB	*/
-#define SENSITIVITY_MAG_4G	160	/**	ugauss/LSB	*/
-#define SENSITIVITY_MAG_8G	320	/**	ugauss/LSB	*/
-#define SENSITIVITY_MAG_12G	480	/**	ugauss/LSB	*/
-
-/* ODR */
-#define ODR_ACC_MASK		(0XF0)	/* Mask for odr change on acc */
-#define LSM303D_ACC_ODR_OFF	(0x00)  /* Power down */
-#define LSM303D_ACC_ODR3_125	(0x10)  /* 3.25Hz output data rate */
-#define LSM303D_ACC_ODR6_25	(0x20)  /* 6.25Hz output data rate */
-#define LSM303D_ACC_ODR12_5	(0x30)  /* 12.5Hz output data rate */
-#define LSM303D_ACC_ODR25	(0x40)  /* 25Hz output data rate */
-#define LSM303D_ACC_ODR50	(0x50)  /* 50Hz output data rate */
-#define LSM303D_ACC_ODR100	(0x60)  /* 100Hz output data rate */
-#define LSM303D_ACC_ODR200	(0x70)  /* 200Hz output data rate */
-#define LSM303D_ACC_ODR400	(0x80)  /* 400Hz output data rate */
-#define LSM303D_ACC_ODR800	(0x90)  /* 800Hz output data rate */
-#define LSM303D_ACC_ODR1600	(0xA0)  /* 1600Hz output data rate */
-
-#define ODR_MAG_MASK		(0X1C)	/* Mask for odr change on mag */
-#define LSM303D_MAG_ODR3_125	(0x00)  /* 3.25Hz output data rate */
-#define LSM303D_MAG_ODR6_25	(0x04)  /* 6.25Hz output data rate */
-#define LSM303D_MAG_ODR12_5	(0x08)  /* 12.5Hz output data rate */
-#define LSM303D_MAG_ODR25	(0x0C)  /* 25Hz output data rate */
-#define LSM303D_MAG_ODR50	(0x10)  /* 50Hz output data rate */
-#define LSM303D_MAG_ODR100	(0x14)  /* 100Hz output data rate */
-
-/* Magnetic sensor mode */
-#define MSMS_MASK		(0x03)	/* Mask magnetic sensor mode */
-#define POWEROFF_MAG		(0x02)	/* Power Down */
-#define CONTINUOS_CONVERSION	(0x00)	/* Continuos Conversion */
-
-/* Default values loaded in probe function */
-#define WHOIAM_VALUE		(0x49)	/** Who Am I default value */
-#define REG_DEF_CNTRL0		(0x00)	/** CNTRL0 default value */
-#define REG_DEF_CNTRL1		(0x0F)	/** CNTRL1 default value */
-#define REG_DEF_CNTRL2		(0x00)	/** CNTRL2 default value */
-#define REG_DEF_CNTRL3		(0x00)	/** CNTRL3 default value */
-#define REG_DEF_CNTRL4		(0x00)	/** CNTRL4 default value */
-#define REG_DEF_CNTRL5		(0x18)	/** CNTRL5 default value */
-#define REG_DEF_CNTRL6		(0x20)	/** CNTRL6 default value */
-#define REG_DEF_CNTRL7		(0x02)	/** CNTRL7 default value */
-
-#define REG_DEF_INT_CNTRL_MAG	(0x00)	/** INT_CTRL_REG_M default value */
-#define REG_DEF_INT_GEN1	(0x00)	/** INT_GEN1_REG default value */
-#define REG_DEF_INT_GEN2	(0x00)	/** INT_GEN2_REG default value */
-#define REG_DEF_IIG1_DURATION	(0x00)	/** INT_GEN1_DUR default value */
-#define REG_DEF_IIG2_DURATION	(0x00)	/** INT_GEN2_DUR default value */
-#define REG_DEF_IIG1_THRESHOLD	(0x00)	/** INT_GEN1_THS default value */
-#define REG_DEF_IIG2_THRESHOLD	(0x00)	/** INT_GEN2_THS default value */
-#define REG_DEF_MIG_THRESHOLD_L	(0x00)	/** INT_THS_L_M default value */
-#define REG_DEF_MIG_THRESHOLD_H	(0x00)	/** INT_THS_H_M default value */
-
-#define REG_DEF_ALL_ZEROS	(0x00)
-
-/* Accelerometer Filter */
-#define LSM303D_ACC_FILTER_MASK	(0xC0)	/* Mask for filter band change on acc */
-#define FILTER_773		773	/* Anti-Aliasing 773 Hz */
-#define FILTER_362		362	/* Anti-Aliasing 362 Hz */
-#define FILTER_194		194	/* Anti-Aliasing 194 Hz */
-#define FILTER_50		50	/* Anti-Aliasing 50 Hz */
-
-/* Temperature */
-#define TEMP_MASK		(0x80)	/* Mask for temperature change */
-#define TEMP_ON			(0x80)	/* Enable temperature */
-#define TEMP_OFF		(0x00)	/* Disable temperature */
-#define TEMP_SENSITIVITY	8	/* Sensitivity temperature */
-#define OFFSET_TEMP		25	/* Offset temperature */
-#define NDTEMP			1000	/* Not Available temperature */
-
-/* Interrupt */
-#define GEN1_PIN1_MASK		(0x20)
-#define GEN1_PIN2_MASK		(0x40)
-#define GEN2_PIN1_MASK		(0x10)
-#define GEN2_PIN2_MASK		(0x20)
-#define GEN_MAG_PIN1_MASK	(0x08)
-#define GEN_MAG_PIN2_MASK	(0x10)
-#define GEN_MAG_EN_MASK		(0x01)
-#define MAX_DUR_TH		127
-#define MAX_TH_MAG		131071
-#define GEN_X_HIGH_MASK		(0x02)
-#define GEN_X_LOW_MASK		(0x01)
-#define GEN_Y_HIGH_MASK		(0x08)
-#define GEN_Y_LOW_MASK		(0x04)
-#define GEN_Z_HIGH_MASK		(0x20)
-#define GEN_Z_LOW_MASK		(0x10)
-#define GEN_X_MAG_MASK		(0x80)
-#define GEN_Y_MAG_MASK		(0x40)
-#define GEN_Z_MAG_MASK		(0x20)
-
-#define GEN1_AND_OR_MASK	(0x80)
-#define GEN2_AND_OR_MASK	(0x83)
-
-#define INT_PIN_CONF_MASK	(0x10)
-#define INT_POLARITY_MASK	(0x80)
-
-#define to_dev(obj) container_of(obj, struct device, kobj)
-#define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
-
-struct lsm303d_acc_platform_data {
-	
-	unsigned int poll_interval;
-	unsigned int min_interval;
-
-	uint8_t fs_range;
-
-	int16_t rot_matrix[3][3];
-
-	uint8_t aa_filter_bandwidth;
-
-	int32_t (*init)(void);
-	void (*exit)(void);
-	int32_t (*power_on)(void);
-	int32_t (*power_off)(void);
-
-	int32_t gpio_int1;
-	int32_t gpio_int2;
+	D_OUT_X_L_M       = 0x08,
+	D_OUT_X_H_M       = 0x09,
+	D_OUT_Y_L_M       = 0x0A,
+	D_OUT_Y_H_M       = 0x0B,
+	D_OUT_Z_L_M       = 0x0C,
+	D_OUT_Z_H_M       = 0x0D
 };
 
-struct lsm303d_mag_platform_data {
+static const int32_t dummy_reg_count = 6;
+regAddr translated_regs[dummy_reg_count + 1]; // index 0 not used
 
-	uint32_t poll_interval;
-	uint32_t min_interval;
+int16_t m_max; // maximum magnetometer values, used for calibration
+int16_t m_min; // minimum magnetometer values, used for calibration
 
-	uint8_t fs_range;
+uint8_t last_status; // status of last I2C transmission
 
-	int16_t rot_matrix[3][3];
+uint8_t LSM303D_Init(LSM303_t *, deviceType, sa0State);
+deviceType LSM303D_GetDeviceType(void) { return _device; }
 
-	int32_t (*init)(void);
-	void (*exit)(void);
-	int32_t (*power_on)(void);
-	int32_t (*power_off)(void);
-};
+void LSM303D_EnableDefault(void);
 
-struct lsm303d_main_platform_data {
-	
-	struct lsm303d_acc_platform_data *pdata_acc;
-	struct lsm303d_mag_platform_data *pdata_mag;
-};
+void LSM303D_WriteAccReg(uint8_t, uint8_t);
+uint8_t LSM303D_ReadAccReg(uint8_t);
+void LSM303D_WriteMagReg(uint8_t, uint8_t);
+uint8_t LSM303D_ReadMagReg(int32_t);
+
+void LSM303D_WriteReg(uint8_t, uint8_t);
+uint8_t LSM303D_ReadReg(int32_t);
+
+void LSM303D_ReadAcc(void);
+void LSM303D_ReadMag(void);
+void LSM303D_Read(void);
+
+void LSM303D_SetTimeout(uint32_t);
+uint32_t LSM303D_GetTimeout(void);
+bool LSM303D_TimeoutOccurred(void);
+
+void LSM303D_Heading(LSM303D_Heading_t *);
+/*
+template <typename T> float heading(vector<T> from);
+*/
+
+// vector functions
+/*
+template <typename Ta, typename Tb, typename To> static void vector_cross(const vector<Ta> *a, const vector<Tb> *b, vector<To> *out);
+template <typename Ta, typename Tb> static float vector_dot(const vector<Ta> *a, const vector<Tb> *b);
+*/
+static void LSM303D_VectorNormalize(float *a);
+
+int32_t LSM303D_TestReg(byte address, regAddr reg);
 #endif	/* __LSM303D_H__ */
