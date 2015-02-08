@@ -42,6 +42,12 @@ typedef struct {
 } vect_t;
 
 typedef struct {
+	int32_t X;
+	int32_t Y;
+	int32_t Z;
+} vect_int_t;
+
+typedef struct {
 	float X;
 	float Y;
 	float Z;
