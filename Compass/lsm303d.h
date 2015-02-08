@@ -197,11 +197,8 @@ deviceType LSM303D_GetDeviceType(void) { return _device; }
 
 void LSM303D_EnableDefault(LSM303_t *);
 
-uint8_t LSM303D_ReadReg(uint8_t);
-uint8_t LSM303D_ReadMagReg(int32_t);
-
 void LSM303D_WriteReg(uint8_t, uint8_t);
-uint8_t LSM303D_ReadReg(int32_t);
+uint8_t LSM303D_ReadReg(uint8_t, int32_t);
 
 void LSM303D_ReadAcc(void);
 void LSM303D_ReadMag(void);

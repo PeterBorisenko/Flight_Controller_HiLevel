@@ -72,7 +72,7 @@ uint8_t LSM303D_Init(LSM303_t * device, deviceType dev, sa0State sa0)
     // make sure device and SA0 were successfully detected; otherwise, indicate failure
     if (dev == device_auto || sa0 == sa0_auto)
     {
-      return false;
+      return 0;
     }
   }
   
@@ -124,8 +124,7 @@ uint8_t LSM303D_Init(LSM303_t * device, deviceType dev, sa0State sa0)
       device->translated_regs[-OUT_Z_L_M] = DLH_OUT_Z_L_M;
       break;
   }
-  
-  return true;
+  return 1;
 }
 
 /*
@@ -222,37 +221,29 @@ void LSM303D_WriteReg(uint8_t addr, uint8_t reg, uint8_t value)
 }
 
 // Reads an accelerometer register
-uint8_t LSM303D_ReadReg(uint8_t addr, uint8_t reg, uint8_t reg)
+uint8_t LSM303D_ReadReg(uint8_t addr, int32_t reg)
 {
+	uint8_t value;
+
+	// if dummy register address (magnetometer Y/Z), look up actual translated address (based on device type)
+	if (reg < 0)
+	{
+		reg = translated_regs[-reg];
+	}
+	
   uint8_t value;
   TWIstart();
   TWIslaveWrite(addr);
-  TWIbyteWrite(reg);
+  TWIbyteWrite((uint8_t)reg);
   TWIstop();
   
   TWIread(addr, &value, 1);
-  TWIstop();
 
-  return value;
-}
-
-// Reads a magnetometer register
-uint8_t LSM303D_ReadMagReg(uint8_t addr, uint8_t addr, int32_t reg)
-{
-  uint8_t value;
-
-  // if dummy register address (magnetometer Y/Z), look up actual translated address (based on device type)
-  if (reg < 0)
-  {
-    reg = translated_regs[-reg];
-  }
-
-  value= LSM303D_ReadReg(addr, addr, (uint8_t) reg);
   return value;
 }
 
 // Reads the 3 accelerometer channels and stores them in vector a
-void LSM303D_ReadAcc(LSM303_t * device) {
+void LSM303D_ReadAcc(LSM303_t * device) { ////////////////////////////////////////////////////////////////////////////////////////////////////
 	struct  
 	{
 		uint8_t xla;
@@ -280,64 +271,56 @@ void LSM303D_ReadAcc(LSM303_t * device) {
 }
 
 // Reads the 3 magnetometer channels and stores them in vector m
-void LSM303D_ReadMag(void)
+void LSM303D_ReadMag(LSM303_t * device)
 {
-  Wire.beginTransmission(mag_address);
-  // If LSM303D, assert MSB to enable subaddress updating
-  // OUT_X_L_M comes first on D, OUT_X_H_M on others
-  Wire.write((_device == device_D) ? translated_regs[-OUT_X_L_M] | (1 << 7) : translated_regs[-OUT_X_H_M]);
-  last_status = Wire.endTransmission();
-  Wire.requestFrom(mag_address, (byte)6);
-
-  unsigned int millis_start = millis();
-  while (Wire.available() < 6) {
-    if (io_timeout > 0 && ((unsigned int)millis() - millis_start) > io_timeout)
-    {
-      did_timeout = true;
-      return;
-    }
-  }
-
-  byte xlm, xhm, ylm, yhm, zlm, zhm;
+	uint8_t result[6];
+	TWIstart();
+	TWIslaveWrite(mag_address);
+	// If LSM303D, assert MSB to enable subaddress updating
+	// OUT_X_L_M comes first on D, OUT_X_H_M on others
+	TWIbyteWrite((device->_device == device_D) ? translated_regs[-OUT_X_L_M] | (1 << 7) : translated_regs[-OUT_X_H_M]);
+	TWIread(mag_address, *result, 6);
+	
+  uint8_t xlm, xhm, ylm, yhm, zlm, zhm;
 
   if (_device == device_D)
   {
     // D: X_L, X_H, Y_L, Y_H, Z_L, Z_H
-    xlm = Wire.read();
-    xhm = Wire.read();
-    ylm = Wire.read();
-    yhm = Wire.read();
-    zlm = Wire.read();
-    zhm = Wire.read();
+    xlm = result[0];
+    xhm = result[1];
+    ylm = result[2];
+    yhm = result[3];
+    zlm = result[4];
+    zhm = result[5];
   }
   else
   {
     // DLHC, DLM, DLH: X_H, X_L...
-    xhm = Wire.read();
-    xlm = Wire.read();
+    xhm = result[0];
+    xlm = result[1];
 
     if (_device == device_DLH)
     {
       // DLH: ...Y_H, Y_L, Z_H, Z_L
-      yhm = Wire.read();
-      ylm = Wire.read();
-      zhm = Wire.read();
-      zlm = Wire.read();
+      yhm = result[2];
+      ylm = result[3];
+      zhm = result[4];
+      zlm = result[5];
     }
     else
     {
       // DLM, DLHC: ...Z_H, Z_L, Y_H, Y_L
-      zhm = Wire.read();
-      zlm = Wire.read();
-      yhm = Wire.read();
-      ylm = Wire.read();
+      zhm = result[2];
+      zlm = result[3];
+      yhm = result[4];
+      ylm = result[5];
     }
   }
 
   // combine high and low bytes
-  m.x = (int16_t)(xhm << 8 | xlm);
-  m.y = (int16_t)(yhm << 8 | ylm);
-  m.z = (int16_t)(zhm << 8 | zlm);
+  device->reading.m.X = (int16_t)(xhm << 8 | xlm);
+  device->reading.m.Y = (int16_t)(yhm << 8 | ylm);
+  device->reading.m.Z = (int16_t)(zhm << 8 | zlm);
 }
 
 // Reads all 6 channels of the LSM303 and stores them in the object variables
@@ -356,19 +339,19 @@ PCB, in the direction of the top of the text on the silkscreen.
 This is the +X axis on the Pololu LSM303D carrier and the -Y axis on
 the Pololu LSM303DLHC, LSM303DLM, and LSM303DLH carriers.
 */
-float LSM303D_Heading(void)
+void LSM303D_Heading(LSM303_t * device)
 {
-  if (_device == device_D)
+  if (device->_device == device_D)
   {
-    return heading((vector<int>){1, 0, 0});
+    device->heading((vect_int_t){1, 0, 0});
   }
   else
   {
-    return heading((vector<int>){0, -1, 0});
+    device->heading((vect_int_t){0, -1, 0});
   }
 }
 
-void LSM303D_VectorNormalize(vector<float> *a)
+void LSM303D_VectorNormalize(vect_float_t *a)
 {
   float mag = sqrt(vector_dot(a, a));
   ax /= mag;
@@ -376,31 +359,13 @@ void LSM303D_VectorNormalize(vector<float> *a)
   a->z /= mag;
 }
 
-// Did a timeout occur in readAcc(), readMag(), or read() since the last call to timeoutOccurred()?
-bool LSM303D_TimeoutOccurred()
-{
-	bool tmp = thisDevice->did_timeout;
-	thisDevice->did_timeout = 0x00;
-	return tmp;
-}
-
-void LSM303D_SetTimeout(uint32_t timeout)
-{
-	io_timeout = timeout;
-}
-
-uint32_t LSM303D_GetTimeout()
-{
-	return io_timeout;
-}
-
-
 // Private Methods //////////////////////////////////////////////////////////////
 
 int32_t LSM303D_TestReg(uint8_t address, regAddr reg)
 {
-  Wire.beginTransmission(address);
-  Wire.write((byte)reg);
+	TWIstart();
+  TWIslaveWrite(address);
+  TWIbyteWrite((uint8_t)reg);
   if (Wire.endTransmission() != 0)
   {
     return TEST_REG_ERROR;
