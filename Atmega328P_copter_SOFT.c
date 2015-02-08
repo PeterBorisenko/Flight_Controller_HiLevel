@@ -30,12 +30,17 @@ typedef struct {
 	vect_t required_vect_Z;
 } Required_t;
 
-volatile static Required_t * Required;
-Baro_t * Baro;
+Required_t Required;
+Baro_t Baro;
+LSM303_t Compass;
+
+volatile static Required_t * pRequired= &Required;
+Baro_t * pBaro= &Baro;
+LSM303_t * pCompass= &Compass;
 
 void getAltitude() {
-	BMP085Convert(Baro);
-	BMP085CalculateAltitude(Baro);
+	BMP085Convert(pBaro);
+	BMP085CalculateAltitude(pBaro);
 }
 
 void main(void)
@@ -43,7 +48,7 @@ void main(void)
 	prepareSystem();
 	prepareRF();
 	prepareSonar();
-	prepareCompass();
+	prepareCompass(pCompass);
 	
     while(1)
     {
