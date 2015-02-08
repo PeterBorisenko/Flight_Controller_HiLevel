@@ -19,28 +19,6 @@
 #define D_WHO_ID    0x49
 #define DLM_WHO_ID  0x3C
 
-enum deviceType { device_DLH, device_DLM, device_DLHC, device_D, device_auto };
-enum sa0State { sa0_low, sa0_high, sa0_auto };
-
-typedef struct {
-	vect_t a; // accelerometer readings
-	vect_t m; // magnetometer readings
-} LSM303D_Reading_t;
-
-typedef struct {
-	float heading;
-} LSM303D_Heading_t;
-
-typedef struct {
-	deviceType _device; // chip type (D, DLHC, DLM, or DLH)
-	uint8_t acc_address;
-	uint8_t mag_address;
-	uint32_t io_timeout;
-	uint8_t did_timeout;
-	LSM303D_Reading_t reading;
-	LSM303D_Heading_t heading;
-} LSM303_t;
-
 // register addresses
 enum regAddr
 {
@@ -188,21 +166,38 @@ enum regAddr
 };
 
 static const int32_t dummy_reg_count = 6;
-regAddr translated_regs[dummy_reg_count + 1]; // index 0 not used
 
-int16_t m_max; // maximum magnetometer values, used for calibration
-int16_t m_min; // minimum magnetometer values, used for calibration
+enum deviceType { device_DLH, device_DLM, device_DLHC, device_D, device_auto };
+enum sa0State { sa0_low, sa0_high, sa0_auto };
 
-uint8_t last_status; // status of last I2C transmission
+typedef struct {
+	vect_t a; // accelerometer readings
+	vect_t m; // magnetometer readings
+} LSM303D_Reading_t;
+
+typedef struct {
+	float heading;
+} LSM303D_Heading_t;
+
+typedef struct {
+	deviceType _device; // chip type (D, DLHC, DLM, or DLH)
+	uint8_t acc_address;
+	uint8_t mag_address;
+	uint32_t io_timeout;
+	uint8_t did_timeout;
+	LSM303D_Reading_t reading;
+	LSM303D_Heading_t heading;
+	regAddr translated_regs[dummy_reg_count + 1]; // index 0 not used
+	vect_t m_max; // maximum magnetometer values, used for calibration
+	vect_t m_min; // minimum magnetometer values, used for calibration
+} LSM303_t;
 
 uint8_t LSM303D_Init(LSM303_t *, deviceType, sa0State);
 deviceType LSM303D_GetDeviceType(void) { return _device; }
 
-void LSM303D_EnableDefault(void);
+void LSM303D_EnableDefault(LSM303_t *);
 
-void LSM303D_WriteAccReg(uint8_t, uint8_t);
-uint8_t LSM303D_ReadAccReg(uint8_t);
-void LSM303D_WriteMagReg(uint8_t, uint8_t);
+uint8_t LSM303D_ReadReg(uint8_t);
 uint8_t LSM303D_ReadMagReg(int32_t);
 
 void LSM303D_WriteReg(uint8_t, uint8_t);
