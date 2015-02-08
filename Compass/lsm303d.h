@@ -20,7 +20,7 @@
 #define DLM_WHO_ID  0x3C
 
 // register addresses
-enum regAddr
+typedef enum
 {
 	TEMP_OUT_L        = 0x05, // D
 	TEMP_OUT_H        = 0x06, // D
@@ -163,12 +163,13 @@ enum regAddr
 	D_OUT_Y_H_M       = 0x0B,
 	D_OUT_Z_L_M       = 0x0C,
 	D_OUT_Z_H_M       = 0x0D
-};
+} regAddr;
+
 
 static const int32_t dummy_reg_count = 6;
 
-enum deviceType { device_DLH, device_DLM, device_DLHC, device_D, device_auto };
-enum sa0State { sa0_low, sa0_high, sa0_auto };
+typedef enum { device_DLH, device_DLM, device_DLHC, device_D, device_auto } deviceType;
+typedef enum { sa0_low, sa0_high, sa0_auto } sa0State;
 
 typedef struct {
 	vect_t a; // accelerometer readings
@@ -187,28 +188,25 @@ typedef struct {
 	uint8_t did_timeout;
 	LSM303D_Reading_t reading;
 	LSM303D_Heading_t heading;
-	regAddr translated_regs[dummy_reg_count + 1]; // index 0 not used
 	vect_t m_max; // maximum magnetometer values, used for calibration
 	vect_t m_min; // minimum magnetometer values, used for calibration
 } LSM303_t;
 
+regAddr translated_regs[];//dummy_reg_count + 1]; // index 0 not used // TODO: check this
+
 uint8_t LSM303D_Init(LSM303_t *, deviceType, sa0State);
-deviceType LSM303D_GetDeviceType(void) { return _device; }
+deviceType LSM303D_GetDeviceType(LSM303_t *);
 
 void LSM303D_EnableDefault(LSM303_t *);
 
-void LSM303D_WriteReg(uint8_t, uint8_t);
-uint8_t LSM303D_ReadReg(uint8_t, int32_t);
+void LSM303D_WriteReg(uint8_t, uint8_t, uint8_t);
+uint8_t LSM303D_ReadReg(LSM303_t *, uint8_t, int32_t);
 
-void LSM303D_ReadAcc(void);
-void LSM303D_ReadMag(void);
-void LSM303D_Read(void);
+void LSM303D_ReadAcc(LSM303_t *);
+void LSM303D_ReadMag(LSM303_t *);
+void LSM303D_Read(LSM303_t *);
 
-void LSM303D_SetTimeout(uint32_t);
-uint32_t LSM303D_GetTimeout(void);
-bool LSM303D_TimeoutOccurred(void);
-
-void LSM303D_Heading(LSM303D_Heading_t *);
+void LSM303D_Heading(LSM303_t *);
 /*
 template <typename T> float heading(vector<T> from);
 */
@@ -218,7 +216,7 @@ template <typename T> float heading(vector<T> from);
 template <typename Ta, typename Tb, typename To> static void vector_cross(const vector<Ta> *a, const vector<Tb> *b, vector<To> *out);
 template <typename Ta, typename Tb> static float vector_dot(const vector<Ta> *a, const vector<Tb> *b);
 */
-static void LSM303D_VectorNormalize(float *a);
+static void LSM303D_VectorNormalize(vect_float_t *a);
 
-int32_t LSM303D_TestReg(byte address, regAddr reg);
+int8_t LSM303D_TestReg(uint8_t address, regAddr reg);
 #endif	/* __LSM303D_H__ */

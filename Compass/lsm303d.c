@@ -83,45 +83,45 @@ uint8_t LSM303D_Init(LSM303_t * device, deviceType dev, sa0State sa0)
   {
     case device_D:
       device->acc_address = device->mag_address = (sa0 == sa0_high) ? D_SA0_HIGH_ADDRESS : D_SA0_LOW_ADDRESS;
-      device->translated_regs[-OUT_X_L_M] = D_OUT_X_L_M;
-      device->translated_regs[-OUT_X_H_M] = D_OUT_X_H_M;
-      device->translated_regs[-OUT_Y_L_M] = D_OUT_Y_L_M;
-      device->translated_regs[-OUT_Y_H_M] = D_OUT_Y_H_M;
-      device->translated_regs[-OUT_Z_L_M] = D_OUT_Z_L_M;
-      device->translated_regs[-OUT_Z_H_M] = D_OUT_Z_H_M;
+      translated_regs[-OUT_X_L_M] = D_OUT_X_L_M;
+      translated_regs[-OUT_X_H_M] = D_OUT_X_H_M;
+      translated_regs[-OUT_Y_L_M] = D_OUT_Y_L_M;
+      translated_regs[-OUT_Y_H_M] = D_OUT_Y_H_M;
+      translated_regs[-OUT_Z_L_M] = D_OUT_Z_L_M;
+      translated_regs[-OUT_Z_H_M] = D_OUT_Z_H_M;
       break;
 
     case device_DLHC:
       device->acc_address = DLHC_DLM_DLH_ACC_SA0_HIGH_ADDRESS; // DLHC doesn't have configurable SA0 but uses same acc address as DLM/DLH with SA0 high
       device->mag_address = DLHC_DLM_DLH_MAG_ADDRESS;
-      device->translated_regs[-OUT_X_H_M] = DLHC_OUT_X_H_M;
-      device->translated_regs[-OUT_X_L_M] = DLHC_OUT_X_L_M;
-      device->translated_regs[-OUT_Y_H_M] = DLHC_OUT_Y_H_M;
-      device->translated_regs[-OUT_Y_L_M] = DLHC_OUT_Y_L_M;
-      device->translated_regs[-OUT_Z_H_M] = DLHC_OUT_Z_H_M;
-      device->translated_regs[-OUT_Z_L_M] = DLHC_OUT_Z_L_M;
+      translated_regs[-OUT_X_H_M] = DLHC_OUT_X_H_M;
+      translated_regs[-OUT_X_L_M] = DLHC_OUT_X_L_M;
+      translated_regs[-OUT_Y_H_M] = DLHC_OUT_Y_H_M;
+      translated_regs[-OUT_Y_L_M] = DLHC_OUT_Y_L_M;
+      translated_regs[-OUT_Z_H_M] = DLHC_OUT_Z_H_M;
+      translated_regs[-OUT_Z_L_M] = DLHC_OUT_Z_L_M;
       break;
 
     case device_DLM:
       device->acc_address = (sa0 == sa0_high) ? DLHC_DLM_DLH_ACC_SA0_HIGH_ADDRESS : DLM_DLH_ACC_SA0_LOW_ADDRESS;
       device->mag_address = DLHC_DLM_DLH_MAG_ADDRESS;
-      device->translated_regs[-OUT_X_H_M] = DLM_OUT_X_H_M;
-      device->translated_regs[-OUT_X_L_M] = DLM_OUT_X_L_M;
-      device->translated_regs[-OUT_Y_H_M] = DLM_OUT_Y_H_M;
-      device->translated_regs[-OUT_Y_L_M] = DLM_OUT_Y_L_M;
-      device->translated_regs[-OUT_Z_H_M] = DLM_OUT_Z_H_M;
-      device->translated_regs[-OUT_Z_L_M] = DLM_OUT_Z_L_M;
+      translated_regs[-OUT_X_H_M] = DLM_OUT_X_H_M;
+      translated_regs[-OUT_X_L_M] = DLM_OUT_X_L_M;
+      translated_regs[-OUT_Y_H_M] = DLM_OUT_Y_H_M;
+      translated_regs[-OUT_Y_L_M] = DLM_OUT_Y_L_M;
+      translated_regs[-OUT_Z_H_M] = DLM_OUT_Z_H_M;
+      translated_regs[-OUT_Z_L_M] = DLM_OUT_Z_L_M;
       break;
 
     case device_DLH:
       device->acc_address = (sa0 == sa0_high) ? DLHC_DLM_DLH_ACC_SA0_HIGH_ADDRESS : DLM_DLH_ACC_SA0_LOW_ADDRESS;
       device->mag_address = DLHC_DLM_DLH_MAG_ADDRESS;
-      device->translated_regs[-OUT_X_H_M] = DLH_OUT_X_H_M;
-      device->translated_regs[-OUT_X_L_M] = DLH_OUT_X_L_M;
-      device->translated_regs[-OUT_Y_H_M] = DLH_OUT_Y_H_M;
-      device->translated_regs[-OUT_Y_L_M] = DLH_OUT_Y_L_M;
-      device->translated_regs[-OUT_Z_H_M] = DLH_OUT_Z_H_M;
-      device->translated_regs[-OUT_Z_L_M] = DLH_OUT_Z_L_M;
+      translated_regs[-OUT_X_H_M] = DLH_OUT_X_H_M;
+      translated_regs[-OUT_X_L_M] = DLH_OUT_X_L_M;
+      translated_regs[-OUT_Y_H_M] = DLH_OUT_Y_H_M;
+      translated_regs[-OUT_Y_L_M] = DLH_OUT_Y_L_M;
+      translated_regs[-OUT_Z_H_M] = DLH_OUT_Z_H_M;
+      translated_regs[-OUT_Z_L_M] = DLH_OUT_Z_L_M;
       break;
   }
   return 1;
@@ -215,13 +215,13 @@ void LSM303D_WriteReg(uint8_t addr, uint8_t reg, uint8_t value)
 {
   TWIstart();
   TWIbyteWrite(addr);
-  TWIbyteWrite(reg)//Wire.write(reg);
+  TWIbyteWrite(reg);
   TWIbyteWrite(value);
   TWIstop();
 }
 
 // Reads an accelerometer register
-uint8_t LSM303D_ReadReg(uint8_t addr, int32_t reg)
+uint8_t LSM303D_ReadReg(LSM303_t * device, uint8_t addr, int32_t reg)
 {
 	uint8_t value;
 
@@ -230,8 +230,7 @@ uint8_t LSM303D_ReadReg(uint8_t addr, int32_t reg)
 	{
 		reg = translated_regs[-reg];
 	}
-	
-  uint8_t value;
+
   TWIstart();
   TWIslaveWrite(addr);
   TWIbyteWrite((uint8_t)reg);
@@ -260,7 +259,7 @@ void LSM303D_ReadAcc(LSM303_t * device) { //////////////////////////////////////
   // to do slave-transmit subaddress updating.
   TWIbyteWrite(OUT_X_L_A | (1 << 7));
   
-  TWIread(device->acc_address, result.xla, 6); // TODO: check this: "(result.xla++) == result.xha "
+  TWIread(device->acc_address, &result.xla, 6); // TODO: check this: "(result.xla++) == result.xha "
 
   // combine high and low bytes
   // This no longer drops the lowest 4 bits of the readings from the DLH/DLM/DLHC, which are always 0
@@ -275,15 +274,15 @@ void LSM303D_ReadMag(LSM303_t * device)
 {
 	uint8_t result[6];
 	TWIstart();
-	TWIslaveWrite(mag_address);
+	TWIslaveWrite(device->mag_address);
 	// If LSM303D, assert MSB to enable subaddress updating
 	// OUT_X_L_M comes first on D, OUT_X_H_M on others
 	TWIbyteWrite((device->_device == device_D) ? translated_regs[-OUT_X_L_M] | (1 << 7) : translated_regs[-OUT_X_H_M]);
-	TWIread(mag_address, *result, 6);
+	TWIread(device->mag_address, result, 6);
 	
   uint8_t xlm, xhm, ylm, yhm, zlm, zhm;
 
-  if (_device == device_D)
+  if (device->_device == device_D)
   {
     // D: X_L, X_H, Y_L, Y_H, Z_L, Z_H
     xlm = result[0];
@@ -299,7 +298,7 @@ void LSM303D_ReadMag(LSM303_t * device)
     xhm = result[0];
     xlm = result[1];
 
-    if (_device == device_DLH)
+    if (device->_device == device_DLH)
     {
       // DLH: ...Y_H, Y_L, Z_H, Z_L
       yhm = result[2];
@@ -324,10 +323,10 @@ void LSM303D_ReadMag(LSM303_t * device)
 }
 
 // Reads all 6 channels of the LSM303 and stores them in the object variables
-void LSM303D_Read(void)
+void LSM303D_Read(LSM303_t * device)
 {
-  LSM303D_ReadAcc();
-  LSM303D_ReadMag();
+  LSM303D_ReadAcc(device);
+  LSM303D_ReadMag(device);
 }
 
 /*
@@ -343,41 +342,39 @@ void LSM303D_Heading(LSM303_t * device)
 {
   if (device->_device == device_D)
   {
-    device->heading((vect_int_t){1, 0, 0});
+    device->heading= /*(vect_int_t)*/(LSM303D_Heading_t){1, 0, 0};
   }
   else
   {
-    device->heading((vect_int_t){0, -1, 0});
+    device->heading= /*(vect_int_t)*/(LSM303D_Heading_t){0, -1, 0};
   }
 }
 
 void LSM303D_VectorNormalize(vect_float_t *a)
 {
-  float mag = sqrt(vector_dot(a, a));
-  ax /= mag;
-  a->y /= mag;
-  a->z /= mag;
+  float mag = sqrt(vector_dot(a, a)); // TODO: what's this?
+  a->X /= mag;
+  a->Y /= mag;
+  a->Z /= mag;
 }
 
-// Private Methods //////////////////////////////////////////////////////////////
-
-int32_t LSM303D_TestReg(uint8_t address, regAddr reg)
+int8_t LSM303D_TestReg(uint8_t address, regAddr reg)
 {
 	TWIstart();
-  TWIslaveWrite(address);
-  TWIbyteWrite((uint8_t)reg);
-  if (Wire.endTransmission() != 0)
-  {
-    return TEST_REG_ERROR;
-  }
+	TWIslaveWrite(address);
+	if (!TWIbyteWrite((uint8_t)reg))
+	{
+		return TEST_REG_ERROR;
+	}
+	TWIslaveRead(address);
+	if (!TWIbyteRead((uint8_t)reg))
+	{
+		return TEST_REG_ERROR;
+	}
+	
+}
 
-  Wire.requestFrom(address, (byte)1);
-  if (Wire.available())
-  {
-    return Wire.read();
-  }
-  else
-  {
-    return TEST_REG_ERROR;
-  }
+deviceType LSM303D_GetDeviceType( LSM303_t * device)
+{
+	return device->_device;
 }
