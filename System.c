@@ -20,8 +20,9 @@ void prepareSystem()
      PRR|= (1 << PRTIM0)|(1 << PRTIM2)|(1 << PRSPI);
  }
  
- void prepareCompass() {
-	 
+ void prepareCompass(LSM303_t * compass) {
+	 LSM303D_Init(compass, device_DLM, sa0_auto);
+	 // LSM303D_EnableDefault(compass);
  }
 
  void prepareSonar() {
