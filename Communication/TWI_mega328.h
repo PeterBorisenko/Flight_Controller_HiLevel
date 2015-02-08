@@ -27,22 +27,22 @@
 
 // Functions
 
-unsigned char TWI_Init(unsigned long);
+uint8_t TWI_Init(uint64_t);
 
-void TWIslaveRead(uint8_t);
+uint8_t TWIslaveRead(uint8_t);
 
-void TWIbyteWrite(uint8_t);
+uint8_t TWIbyteWrite(uint8_t);
 
 uint8_t TWIbyteRead();
 
-void TWIslaveWrite(uint8_t);
+uint8_t TWIslaveWrite(uint8_t);
 
 void TWIstop();
 
-void TWIstart();
+uint8_t TWIstart();
 
-void TWIread(uint8_t, uint8_t *, uint8_t);
+uint8_t TWIread(uint8_t, uint8_t *, uint8_t);
 
-void TWIwrite(uint8_t, uint8_t *, uint8_t);
+uint8_t TWIwrite(uint8_t, uint8_t *, uint8_t);
 
 #endif /*TWI_MEGA328_H*/
