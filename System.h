@@ -13,7 +13,7 @@
 // Devices
 #include "Barometer/BMP085.h"
 #include "Sonar/Sonar.h"
-//#include "Compass/LSM303D.h"
+#include "Compass/LSM303D.h"
 #include "Proximity.h"
 //#include "RC/"
 
