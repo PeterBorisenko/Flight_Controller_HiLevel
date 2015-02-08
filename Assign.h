@@ -22,7 +22,6 @@
 #define RECEIVE_Y   0x04
 #define RECEIVE_Z   0x05
 #define RECEIVE_ROT	0x06
-#define RECEIVE_RSP	0x07
 #define USART_ASKED	0x10
 #define USART_ASKS	0x11
 #define SEND_STAT	0x12
