@@ -4,7 +4,7 @@
  * Created: 05.02.2015 18:00:33
  *  Author: Disgust
  * 
- * Needs Timer to be prepared in Capture mode
+ * Needs Timer1 to be prepared in Capture mode
  * with enabled OVF and other interrupts
  * TODO: Complete reference
  */ 
@@ -49,8 +49,8 @@ void sonarArm();
 void dirTgl();
 void sonarCaptureStart();
 void sonarCaptureStop();
-uint32_t sonarGetWidth();
-uint32_t sonarGetRange();
+uint16_t sonarGetWidth();
+uint16_t sonarGetRange();
 void sonarArmHandler();
 void sonarCaptureHandler();
 void sonarOutOfRange();

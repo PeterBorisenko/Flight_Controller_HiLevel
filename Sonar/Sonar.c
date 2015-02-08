@@ -1,9 +1,10 @@
 #include "Sonar.h"
 #include "../Macro.h"
+#include "../Assign.h"
 #include "../Timer1_mega328.h"
 #include <avr/io.h>
 
-#define SONAR_MULT	(SONAR_TMR_PSK/F_CPU) // Time per Tmr tick
+#define SONAR_MULT	(SONAR_TMR_PSC/F_CPU) // Time per Tmr tick
 #define SONAR_RES	(SONAR_MULT*SPEED_OF_SOUND/2) // Minimum range
 #define SONAR_TIME_CALC(x) (x*SONAR_MULT)
 #define SONAR_RANGE_CALC(x)	(x*SONAR_RES)
@@ -65,7 +66,7 @@ uint16_t sonarGetWidth() {
 
 uint16_t sonarGetRange() {
 	uint16_t result;
-	result= SONAR_RANGE_CALC();
+	result= SONAR_RANGE_CALC(sonarGetWidth());
 	sonar_state= SONAR_IDLE;
 	return result;
 }
