@@ -15,7 +15,7 @@
 #include "Sonar/Sonar.h"
 #include "Compass/LSM303D.h"
 #include "Proximity.h"
-//#include "RC/"
+#include "RC/CPPM.h"
 
 void initOsc();
 void setPowerReduction();

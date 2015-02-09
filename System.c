@@ -30,7 +30,8 @@ void prepareSystem()
  }
 
  void prepareRF() {
-	 
+	 DDRD= (0xFF << 2); // Arduino mini pins 2 - 7
+	 CPPM_init(PINCH_GR_2, DDRD, TMR0_PSC_1024);
  }
 
  void prepareBarometer() {
