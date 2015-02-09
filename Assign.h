@@ -16,12 +16,12 @@
 
 // USART States
 #define USART_IDLE  0x00
-#define USART_REQ   0x01
-#define HEADER_OK   0x02
-#define RECEIVE_X   0x03
-#define RECEIVE_Y   0x04
-#define RECEIVE_Z   0x05
-#define RECEIVE_ROT	0x06
+#define SEND_HEADER_1   0x01
+#define SEND_HEADER_2   0x02
+#define SEND_X   0x03
+#define SEND_Y   0x04
+#define SEND_Z   0x05
+#define SEND_ROT	0x06
 #define USART_ASKED	0x10
 #define USART_ASKS	0x11
 #define SEND_STAT	0x12
