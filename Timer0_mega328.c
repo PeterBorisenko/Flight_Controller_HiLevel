@@ -35,3 +35,8 @@ void tmr0SetMode(uint8_t mode)
 	TCCR0B|= ((mode >> 2) << WGM02);
 }
 
+uint8_t tmr0Read()
+{
+	return TCNT0;
+}
+

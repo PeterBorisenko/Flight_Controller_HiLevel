@@ -9,7 +9,7 @@
 #ifndef INCFILE1_H_
 #define INCFILE1_H_
 
-#include <avr/iom328.h>
+#include <avr/io.h>
 #include "Macro.h"
 
 #define TMR0_NO_PSC		0x01
@@ -41,6 +41,8 @@ void tmr0OutMode(uint8_t);
 void tmr0SetOCRA(uint8_t);
 
 void tmr0SetOCRB(uint8_t);
+
+inline uint8_t tmr0Read();
 
 
 #endif /* INCFILE1_H_ */
