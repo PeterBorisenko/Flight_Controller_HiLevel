@@ -38,6 +38,15 @@ volatile static Required_t * pRequired= &Required;
 Baro_t * pBaro= &Baro;
 LSM303_t * pCompass= &Compass;
 
+CPPM_In_t * cppmIn0;
+CPPM_In_t * cppmIn1;
+CPPM_In_t * cppmIn2;
+CPPM_In_t * cppmIn3;
+CPPM_In_t * cppmIn4;
+CPPM_In_t * cppmIn5;
+
+CPPM_In_t cppmPins[]= {cppmIn0, cppmIn1, cppmIn2, cppmIn3, cppmIn4, cppmIn5};
+
 void getAltitude() {
 	BMP085Convert(pBaro);
 	BMP085CalculateAltitude(pBaro);
@@ -56,13 +65,13 @@ void main(void)
     }
 }
 
-ISR(TIMER0_OVF_vect){ // System TIMER
-	// TODO: Call Task Manager from here
+ISR(TIMER0_OVF_vect){ 
 
 }
 
-ISR(TIMER2_OVF_vect){
-
+ISR(TIMER2_OVF_vect){ // System TIMER
+	
+	// TODO: Call Task Manager from here
 }
 
 ISR (USART_TX_vect) {
@@ -89,6 +98,18 @@ ISR(TIMER1_COMPA_vect) {
 	sonarArmHandler();
 }
 
-ISR(PCINT0_vect) {
-	// TODO: Software USART RX
+ISR(PCINT2_vect) {
+	// TODO: Make selection by interrupt source pin
+	
+	static uint8_t prevState;
+	static uint8_t curState= (DDRD >> 2);
+	uint8_t val= curState^prevState;
+	for (uint8_t i= 0; i < 6; i++)
+	{
+		if ((val >> i)&0x01)
+		{
+			CPPM_decoderHandler(cppmPins[i]);
+		}
+	}
+
 }
