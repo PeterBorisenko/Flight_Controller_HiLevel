@@ -1,17 +1,24 @@
 #include "CPPM.h"
-
-typedef struct {
-	uint8_t state;
-	uint8_t val;
-} CPPM_In_t;
 	
-	
-
-void CPPM_decoderHandler() { // one or more of pins 2~7 have changed state
-	
+void CPPM_init(uint8_t gr, uint8_t msk, uint8_t tmrPsc) {
+	pinchOn(gr, msk);
+	tmr0IntOn(TMR0_OVF_INT);
+	tmr0Start(tmrPsc);
 }
 
-void CPPM_init() {
-	tmr0IntOn(TMR0_OVF_INT);
-	tmr0Start(TMR0_PSC_1024);
+
+
+void CPPM_decoderHandler(CPPM_In_t * cppmIn) { // one or more of pins 2~7 have changed state
+	
+	if (cppmIn->state == 0x01)
+	{
+		cppmIn->endTim= tmr0Read();
+		cppmIn->state= 0x00;
+		cppmIn->val= (uint8_t)(cppmIn->endTim - cppmIn->startTim);
+	} 
+	else
+	{
+		cppmIn->startTim= tmr0Read();
+		cppmIn->state= 0x01;
+	}
 }
