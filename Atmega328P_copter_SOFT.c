@@ -68,11 +68,16 @@ ISR(TIMER2_OVF_vect){ // System TIMER
 }
 
 ISR (USART_TX_vect) {
+	// if TX completed - wait for answer
+}
 
+ISR (USART_UDRE_vect) {
+	// if DR empty - place next byte if exists or disable UDRE int
 }
 
 ISR (USART_RX_vect) {
-
+	// if received ACK - send next message if exists or change state
+	// if received NACK - send message from beginning
 }
 
 ISR(WDT_vect) {
