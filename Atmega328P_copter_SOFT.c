@@ -19,6 +19,7 @@
 #include "System.h"
 #include "Communication.h"
 
+void * taskQueue[255];
 
 volatile const uint8_t sendDataLength= 13;
 volatile uint8_t sendBufferIndex= 0;
@@ -65,6 +66,24 @@ void main(void)
     while(1) {
         //TODO:: Please write your application code 
     }
+}
+
+void NAV() { // this task polls sensors and calculates position
+	
+}
+
+void CONT() { // this task receives RF data and makes instructions for driver system
+	
+}
+
+void IDLE() { // this is an empty task
+	while (1) {
+		;;
+	}
+}
+
+void TASK_(void * task) { // task container
+	
 }
 
 void startSending() {
