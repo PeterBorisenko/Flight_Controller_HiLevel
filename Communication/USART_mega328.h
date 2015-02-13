@@ -13,6 +13,13 @@
 #include <avr/io.h>
 #include "../Macro.h"
 
+
+// interrupts
+#define USART_RX_INT	0x80
+#define USART_TX_INT	0x40
+#define USART_UD_INT	0x20
+
+
 //#define BAUD_DOUBLE
 
 #ifndef BAUD_DOUBLE
@@ -24,6 +31,9 @@
 
 
 void prepareUSART(uint16_t);
+
+void uartIntOn(uint8_t);
+void uartIntOff(uint8_t);
 
 void sendChar(uint8_t);
 void sendBuff(uint8_t *, uint8_t);

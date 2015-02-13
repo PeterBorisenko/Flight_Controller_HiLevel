@@ -30,5 +30,16 @@
  {
 	 return UDR0;
  }
+
+void uartIntOn(uint8_t regValue)
+{
+	UCSR0B|= regValue;
+}
+
+void uartIntOff(uint8_t regValue)
+{
+	UCSR0B&= ~regValue;
+}
+
  
  //TODO: Implement other functions and ISR
