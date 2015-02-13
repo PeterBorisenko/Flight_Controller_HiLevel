@@ -17,7 +17,7 @@ void prepareSystem()
 }
 
  void setPowerReduction() {
-     PRR|= (1 << PRTIM0)|(1 << PRTIM2)|(1 << PRSPI);
+     PRR|= (1 << PRTIM2)|(1 << PRSPI);
  }
  
  void prepareCompass(LSM303_t * compass) {
@@ -30,7 +30,7 @@ void prepareSystem()
  }
 
  void prepareRF() {
-	 DDRD= (0xFF << 2); // Arduino mini pins 2 - 7
+	 DDRD&= ~(0xFF << 2); // Arduino mini pins 2 - 7
 	 CPPM_init(PINCH_GR_2, (0xFF << 2), TMR0_PSC_1024);
  }
 
