@@ -15,16 +15,14 @@
 #define BAUD 1200
 
 // USART States
-#define USART_IDLE  0x00
-#define SEND_HEADER_1   0x01
-#define SEND_HEADER_2   0x02
-#define SEND_X   0x03
-#define SEND_Y   0x04
-#define SEND_Z   0x05
-#define SEND_ROT	0x06
-#define USART_ASKED	0x10
-#define USART_ASKS	0x11
-#define SEND_STAT	0x12
+typedef enum {
+		USART_IDLE,
+		USART_HEADER,
+		USART_WORK,
+		USART_ASKED,
+		USART_ASKS,
+		SEND_STAT
+	} usartState_t;
 
 // Message parts
 #define HEADER      0x1010
@@ -51,8 +49,6 @@ typedef struct {
 	float Y;
 	float Z;
 } vect_float_t;
-
-#define DATA_WIDTH 2
 
 // Sonar Pins/Ports
 #define SONAR_DIR		DDRB
