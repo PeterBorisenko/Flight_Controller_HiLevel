@@ -27,9 +27,7 @@ void dirTgl() {
 void sonarInit(uint8_t mode) {
 	tmr1SetOCRA(SONAR_ARM_TIME);
 	tmr1NoiseCancelerOn();
-	tmr1IntOn(OCIE1A);
-	tmr1IntOn(TOIE1);
-	tmr1IntOn(OCIE1A);
+	tmr1IntOn(TMR1_OCA_INT + TMR1_OVF_INT + TMR1_IC_INT);
 	tmr1Flush();
 	BIT_set(SONAR_DIR, SONAR_PIN);
 	BIT_clear(SONAR_PORT, SONAR_PIN);

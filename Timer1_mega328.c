@@ -8,12 +8,12 @@
 
 #include "Timer1_mega328.h"
 
-void tmr1IntOn(uint8_t intAddr) {
-	TIMSK1|= (1 << intAddr);
+void tmr1IntOn(uint8_t intVal) {
+	TIMSK1|= intVal;
 }
 
-void tmr1IntOff(uint8_t intAddr) {
-	TIMSK1&= ~(1 << intAddr);
+void tmr1IntOff(uint8_t intVal) {
+	TIMSK1&= ~intVal;
 }
 
 void tmr1SetMode(uint8_t mode) {
