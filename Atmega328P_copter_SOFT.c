@@ -24,10 +24,9 @@ volatile uint8_t transmitByteCount= DATA_WIDTH;
 volatile static uint8_t FLAGS= 0x00;
 
 // Vector instructions for drive system
-typedef struct {
-	vect_t required_vect_X;
-	vect_t required_vect_Y;
-	vect_t required_vect_Z;
+typedef union {
+	vect_float_t required_vect;
+	uint8_t byteToSend[4];
 } Required_t;
 
 Required_t Required;
@@ -56,6 +55,10 @@ void main(void)
     {
         //TODO:: Please write your application code 
     }
+}
+
+void sendMessage(Required_t req) {
+	
 }
 
 ISR(TIMER0_OVF_vect){ 
