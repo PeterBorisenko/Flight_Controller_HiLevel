@@ -12,8 +12,6 @@ uint8_t LSM303D_Init(LSM303_t * device, deviceType dev, sa0State sa0)
 	device->m_min = (vect_t){-32767, -32767, -32767};
 	device->m_max = (vect_t){+32767, +32767, +32767};
 		
-	device->io_timeout = 0;  // 0 = no timeout
-	device->did_timeout = 0x00;
   // perform auto-detection unless device type and SA0 state were both specified
   if (dev == device_auto || sa0 == sa0_auto)
   {

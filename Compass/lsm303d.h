@@ -184,8 +184,6 @@ typedef struct {
 	deviceType _device; // chip type (D, DLHC, DLM, or DLH)
 	uint8_t acc_address;
 	uint8_t mag_address;
-	uint32_t io_timeout;
-	uint8_t did_timeout;
 	LSM303D_Reading_t reading;
 	LSM303D_Heading_t heading;
 	vect_t m_max; // maximum magnetometer values, used for calibration
