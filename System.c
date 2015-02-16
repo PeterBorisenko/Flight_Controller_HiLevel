@@ -29,7 +29,7 @@ void prepareSystem()
 	 sonarInit(USE_INTERRUPT);
  }
 
- void prepareRF() {
+ void prepareRC() {
 	 DDRD&= ~(0xFF << 2); // Arduino mini pins 2 - 7
 	 CPPM_init(PINCH_GR_2, (0xFF << 2), TMR0_PSC_1024);
  }

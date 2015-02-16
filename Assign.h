@@ -86,4 +86,6 @@ typedef struct {
 #define D_PROX_PIN			// ADC3
 #define D_PROX_ADC_MUX
 
+#define CCPM_CHANNELS 6
+
 #endif /* ASSIGN_H_ */

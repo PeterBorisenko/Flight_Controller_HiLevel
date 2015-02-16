@@ -22,5 +22,5 @@ void setPowerReduction();
 void prepareSystem();
 void prepareCompass();
 void prepareSonar();
-void prepareRF();
+void prepareRC();
 #endif /*SYSTEM_H*/

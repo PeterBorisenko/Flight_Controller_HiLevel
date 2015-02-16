@@ -19,7 +19,8 @@
 #include "System.h"
 #include "Communication.h"
 
-void * taskQueue[255];
+typedef void (*task)(void);
+task taskQueue[255];
 
 volatile const uint8_t sendDataLength= 13;
 volatile uint8_t sendBufferIndex= 0;
@@ -47,7 +48,7 @@ volatile static Instruction_t * pInstruction= &Instruction;
 Baro_t * pBaro= &Baro;
 LSM303_t * pCompass= &Compass;
 
-CPPM_In_t cppm[6];
+CPPM_In_t cppm[CPPM_CHANNELS];
 
 uint8_t buffer[13];
 
@@ -59,7 +60,7 @@ void getAltitude() {
 void main(void)
 {
 	prepareSystem();
-	prepareRF();
+	prepareRC();
 	prepareSonar();
 	prepareCompass(pCompass);
 	
@@ -73,7 +74,15 @@ void NAV() { // this task polls sensors and calculates position
 }
 
 void CONT() { // this task receives RF data and makes instructions for driver system
-	
+	while(1) {
+		for (uint8_t i= 0; i < CPPM_CHANNELS; i++)
+		{
+			if (cppm[i].state)
+			{
+				
+			} 
+		}
+	}
 }
 
 void IDLE() { // this is an empty task
@@ -93,7 +102,7 @@ void startSending() {
 	uartIntOn(USART_UD_INT);
 }
 
- // Sends 
+ // Sends the body of instruction message
 void sendMessage(Instruction_t * msg, uint8_t * buf) {
 	for (uint8_t i= 0; i<= 13; i++) {
 		buf[i]= msg->byteToSend[i];
