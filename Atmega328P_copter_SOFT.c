@@ -73,14 +73,62 @@ void NAV() { // this task polls sensors and calculates position
 	
 }
 
-void CONT() { // this task receives RF data and makes instructions for driver system
+void CONT() {
+ // this task receives RF data and makes instructions for driver system
 	while(1) {
+		uint8_t buf[CPPM_CHANNELS];
 		for (uint8_t i= 0; i < CPPM_CHANNELS; i++)
 		{
-			if (cppm[i].state)
-			{
+			while(!cppm[i].state);
+			buf[i]= cppm[i].val;
+				// TODO: generate instructions
+			
+		}
+		if (buf[CH_T]>RC_TRESHOLD)
+		{
+			if(buf[CH_T]<RC_MIDDLE){
+				pInstruction->motion.required_vect.Z= POSITIVE_CHANGE(buf[CH_T]);
 				
-			} 
+			}
+			else if(buf[CH_T]>RC_MIDDLE){
+				pInstruction->motion.required_vect.Z= NEGATIVE_CHANGE(buf[CH_T]);
+				
+			}
+		}
+		if (buf[CH_X]>RC_TRESHOLD)
+		{
+			if(buf[CH_X]<RC_MIDDLE){
+				pInstruction->motion.required_vect.Y= POSITIVE_CHANGE(buf[CH_X]);
+			}
+			else if(buf[CH_X]>RC_MIDDLE){
+				pInstruction->motion.required_vect.Y= NEGATIVE_CHANGE(buf[CH_X]);
+			}
+		}
+		if (buf[CH_Y]>RC_TRESHOLD)
+		{
+			if(buf[CH_Y]<RC_MIDDLE){
+				pInstruction->motion.required_vect.X= POSITIVE_CHANGE(buf[CH_Y]);
+			}
+			else if(buf[CH_Y]>RC_MIDDLE){
+				pInstruction->motion.required_vect.X= NEGATIVE_CHANGE(buf[CH_Y]);
+			}
+		}
+		if (buf[CH_Z]>RC_TRESHOLD)
+		{
+			if(buf[CH_Z]<RC_MIDDLE){
+				pInstruction->motion.rotation= (int8_t)buf[CH_Z];
+			}
+			else if(buf[CH_Z]>RC_MIDDLE){
+				pInstruction->motion.rotation= (int8_t)(RC_MAX - (buf[CH_Z] - RC_MIDDLE));
+			}
+		}
+		if (buf[CH_A]>RC_TRESHOLD)
+		{
+			// Altitude, course or velocity
+		}
+		if (buf[CH_L]>RC_TRESHOLD)
+		{
+			// Automatic slow landing using Sonar
 		}
 	}
 }
