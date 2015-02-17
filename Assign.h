@@ -86,6 +86,20 @@ typedef struct {
 #define D_PROX_PIN			// ADC3
 #define D_PROX_ADC_MUX
 
-#define CCPM_CHANNELS 6
+// RC defines
+#define CPPM_CHANNELS 6
+#define RC_TRESHOLD 16
+#define RC_STEP_WIDTH 16
+#define RC_MIDDLE	0x7F
+#define RC_MAX	0xFF
+#define CH_Z	0x0	// Yaw
+#define CH_X	0x1 // Roll
+#define CH_Y	0x2 // Pitch
+#define CH_T	0x3 // Throttle
+#define CH_A	0x4 // Autopilot (?)
+#define CH_L	0x5 // Landing
+
+#define POSITIVE_CHANGE(x) ((float)(x/0xFF))
+#define NEGATIVE_CHANGE(x) (0 - ((float)(x - RC_MIDDLE)/0xFF)) // TODO: Check this
 
 #endif /* ASSIGN_H_ */
