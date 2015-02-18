@@ -19,14 +19,14 @@
 #include "System.h"
 #include "Communication.h"
 
-typedef void (*task)(void);
-task taskQueue[255];
 
-volatile const uint8_t sendDataLength= 13;
+
+#define  sendDataLength 13
 volatile uint8_t sendBufferIndex= 0;
 volatile usartState_t usartState;
 
 volatile static uint8_t FLAGS= 0x00;
+#define INSTR_READY 0x02;
 
 // Vector instructions for drive system
 typedef struct  
@@ -37,7 +37,7 @@ typedef struct
 
 typedef union {
 	Motion_t motion;
-	uint8_t byteToSend[13];
+	uint8_t byteToSend[sendDataLength];
 } Instruction_t;
 
 Instruction_t Instruction;
@@ -50,7 +50,7 @@ LSM303_t * pCompass= &Compass;
 
 CPPM_In_t cppm[CPPM_CHANNELS];
 
-uint8_t buffer[13];
+uint8_t buffer[sendDataLength];
 
 void getAltitude() {
 	BMP085Convert(pBaro);
@@ -66,6 +66,7 @@ void main(void)
 	
     while(1) {
         //TODO:: Please write your application code 
+		CONT();
     }
 }
 
@@ -75,7 +76,7 @@ void NAV() { // this task polls sensors and calculates position
 
 void CONT() {
  // this task receives RF data and makes instructions for driver system
-	while(1) {
+	while(BIT_read(FLAGS, INSTR_READY)) {
 		uint8_t buf[CPPM_CHANNELS];
 		for (uint8_t i= 0; i < CPPM_CHANNELS; i++)
 		{
@@ -133,16 +134,6 @@ void CONT() {
 	}
 }
 
-void IDLE() { // this is an empty task
-	while (1) {
-		;;
-	}
-}
-
-void TASK_(void * task) { // task container
-	
-}
-
  // Begin of a message sending
  // Sends first byte of header and turns ON UD interrupt
 void startSending() {
@@ -152,7 +143,7 @@ void startSending() {
 
  // Sends the body of instruction message
 void sendMessage(Instruction_t * msg, uint8_t * buf) {
-	for (uint8_t i= 0; i<= 13; i++) {
+	for (uint8_t i= 0; i<= sendDataLength; i++) {
 		buf[i]= msg->byteToSend[i];
 	}
 	sendBufferIndex++;
@@ -173,7 +164,7 @@ ISR (USART_TX_vect) {
 	// if TX completed - wait for answer
 	if (usartState == USART_WORK) {
 		switch(sendBufferIndex) {
-			case 4: case 8: case 12: case 13:
+			case 4: case 8: case 12: case sendDataLength:
 				// TODO: start ACK receive timer
 				break;
 			default:
@@ -185,7 +176,7 @@ ISR (USART_TX_vect) {
 ISR (USART_UDRE_vect) {
 	if (usartState == USART_WORK) {				
 		switch(sendBufferIndex){				// previously sent byte
-			case 13:								// if was sent the last byte - turn OFF UD interrupt
+			case sendDataLength:								// if was sent the last byte - turn OFF UD interrupt
 				sendBufferIndex= 0;
 				uartIntOff(USART_UD_INT);
 				break;
@@ -212,7 +203,7 @@ ISR (USART_RX_vect) {
 	uint8_t resp= receiveChar();
 	if (usartState == USART_WORK) {
 		if (resp == ACK) {				
-			if (sendBufferIndex != 13) {			// if received ACK and that was not after sending the last byte - send next
+			if (sendBufferIndex != sendDataLength) {			// if received ACK and that was not after sending the last byte - send next
 				sendBufferIndex++;
 				sendChar(buffer[sendBufferIndex]);
 				uartIntOn(USART_UD_INT);
