@@ -70,7 +70,7 @@ int main(void)
 	prepareCompass(pCompass);
 	
     while(1) {
-        //TODO:: Please write your application code 
+		//NAV();
 		CONT();
     }
 }
@@ -81,14 +81,14 @@ void NAV() { // this task polls sensors and calculates position
 
 void CONT() {
  // this task receives RF data and makes instructions for driver system
-	while(!BIT_read(FLAGS, INSTR_READY)) {
+	do {
 		uint8_t buf[CPPM_CHANNELS];
 		for (uint8_t i= 0; i < CPPM_CHANNELS; i++)
 		{
-			while(!cppm[i].state);
-			buf[i]= cppm[i].val;
-				// TODO: generate instructions
-			
+			if(cppm[i].state) { // Copy RC values
+				buf[i]= cppm[i].val;
+			}
+			BIT_set(FLAGS, INSTR_READY);
 		}
 		if (buf[CH_T]>RC_TRESHOLD)
 		{
@@ -136,8 +136,9 @@ void CONT() {
 		{
 			// Automatic slow landing using Sonar
 		}
-	}
+	} while(!BIT_read(FLAGS, INSTR_READY));
 	startSending();
+	BIT_clear(FLAGS, INSTR_READY);
 }
 
  // Begin of a message sending

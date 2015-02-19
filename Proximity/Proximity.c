@@ -21,7 +21,7 @@ uint8_t conversion( uint8_t _ADC ) /*ADC 8-bit, Vref 3.3V */
     return (uint8_t)(Result/(_ADC-8));
 }
 
-uint8_t LinearAPPROX(uint8_t input)
+uint8_t linearApprox(uint8_t input)
 {
     // Too far
     if (input<21) return 255;
@@ -48,4 +48,19 @@ uint8_t LinearAPPROX(uint8_t input)
     
     // Too close
     return 0;
+}
+
+void prepareProximitySensors()
+{
+	// TODO: init adc
+}
+
+ProximitySensor_t * checkProximitySensors()
+{
+	// TODO: check if adc inputs are not equal zero. if equal - channel not exists
+}
+
+void readProximitySensors( ProximitySensor_t * )
+{
+	
 }
