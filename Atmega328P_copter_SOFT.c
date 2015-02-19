@@ -18,15 +18,13 @@
 #include "Assign.h"
 #include "System.h"
 #include "Communication.h"
-
-
-
+//-------------------------------------
 #define  sendDataLength 13
 volatile uint8_t sendBufferIndex= 0;
 volatile usartState_t usartState;
 
 volatile static uint8_t FLAGS= 0x00;
-#define INSTR_READY 0x02;
+#define INSTR_READY 0x02
 
 // Vector instructions for drive system
 typedef struct  
@@ -49,15 +47,22 @@ Baro_t * pBaro= &Baro;
 LSM303_t * pCompass= &Compass;
 
 CPPM_In_t cppm[CPPM_CHANNELS];
-
 uint8_t buffer[sendDataLength];
+
+
+void startSending();
+void sendMessage(volatile Instruction_t *, uint8_t *);
+void NAV();
+void CONT();
+
+
 
 void getAltitude() {
 	BMP085Convert(pBaro);
 	BMP085CalculateAltitude(pBaro);
 }
 
-void main(void)
+int main(void)
 {
 	prepareSystem();
 	prepareRC();
@@ -76,7 +81,7 @@ void NAV() { // this task polls sensors and calculates position
 
 void CONT() {
  // this task receives RF data and makes instructions for driver system
-	while(BIT_read(FLAGS, INSTR_READY)) {
+	while(!BIT_read(FLAGS, INSTR_READY)) {
 		uint8_t buf[CPPM_CHANNELS];
 		for (uint8_t i= 0; i < CPPM_CHANNELS; i++)
 		{
@@ -132,6 +137,7 @@ void CONT() {
 			// Automatic slow landing using Sonar
 		}
 	}
+	startSending();
 }
 
  // Begin of a message sending
@@ -142,7 +148,7 @@ void startSending() {
 }
 
  // Sends the body of instruction message
-void sendMessage(Instruction_t * msg, uint8_t * buf) {
+void sendMessage(volatile Instruction_t * msg, uint8_t * buf) {
 	for (uint8_t i= 0; i<= sendDataLength; i++) {
 		buf[i]= msg->byteToSend[i];
 	}
@@ -253,9 +259,8 @@ ISR(TIMER1_COMPA_vect) {
 ISR(PCINT2_vect) {
 	// TODO: Make selection by interrupt source pin
 	
-	uint8_t prevState;
 	uint8_t curState= (DDRD >> 2);
-	uint8_t val= curState^prevState;
+	uint8_t val= curState^PCINTprevState2;
 	for (uint8_t i= 0; i < 6; i++)
 	{
 		if ((val >> i)&0x01)
@@ -263,5 +268,5 @@ ISR(PCINT2_vect) {
 			CPPM_decoderHandler(&cppm[i]);
 		}
 	}
-
+	PCINTprevState2=curState ;
 }
