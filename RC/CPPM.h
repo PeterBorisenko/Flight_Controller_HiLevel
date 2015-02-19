@@ -27,8 +27,6 @@ typedef struct {
 	uint8_t endTim;
 } CPPM_In_t;
 
-
-
 void CPPM_decoderHandler(CPPM_In_t *);
 void CPPM_init(uint8_t, uint8_t, uint8_t);
 #endif /* CPPM_H_ */

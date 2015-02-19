@@ -10,10 +10,11 @@
 
 void prepareSystem()
 {
-    WDTCSR|= (1 << WDE)|(1 << WDIE);
+    //WDTCSR|= (1 << WDE)|(1 << WDIE);
     //WDTCSR|=(0b111 << WDP0);
 	initOsc();
     setPowerReduction();
+	TWI_Init(400000, F_CPU);
 }
 
  void setPowerReduction() {
