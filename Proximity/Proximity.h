@@ -18,16 +18,16 @@
 typedef enum {
 		ON,
 		OFF
-	} State_t;
+	} proxState_t;
 
 typedef struct {
 	uint8_t channel;
-	State_t state; // ON/OFF
+	proxState_t state; // ON/OFF
 	adc_t rawData;
 	} ProximitySensor_t;
 
 void prepareProximitySensors();
-State_t checkProximitySensor(ProximitySensor_t *); // search for connected IR-sensors, returns array of struct
+void checkProximitySensor(ProximitySensor_t *); // search for connected IR-sensors, returns array of struct
 uint8_t conversion( uint8_t ); /*ADC 8-bit, Vref 3.3V */
 uint8_t linearApprox( uint8_t );
 void proximityReadHandler(/* Use global var */);

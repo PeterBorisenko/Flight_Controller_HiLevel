@@ -86,6 +86,8 @@ typedef struct {
 #define D_PROX_PIN			// ADC3
 #define D_PROX_ADC_MUX
 
+#define numProximityChannels 6
+
 // RC defines
 #define CPPM_CHANNELS 6
 #define RC_TRESHOLD 16
