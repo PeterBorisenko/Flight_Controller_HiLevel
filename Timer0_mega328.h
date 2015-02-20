@@ -42,7 +42,7 @@ void tmr0SetOCRA(uint8_t);
 
 void tmr0SetOCRB(uint8_t);
 
-inline uint8_t tmr0Read();
+uint8_t tmr0Read();
 
 
 #endif /* INCFILE1_H_ */

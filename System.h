@@ -14,7 +14,7 @@
 #include "Barometer/BMP085.h"
 #include "Sonar/Sonar.h"
 #include "Compass/LSM303D.h"
-#include "Proximity.h"
+#include "Proximity/Proximity.h"
 #include "RC/CPPM.h"
 
 void initOsc();
