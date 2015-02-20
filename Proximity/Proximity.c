@@ -6,7 +6,13 @@
  */ 
 #include "Proximity.h"
 
-uint8_t conversion( uint8_t _ADC ) /*ADC 8-bit, Vref 3.3V */
+ProximitySensor_t * currentMeasuringSensor;
+uint8_t block= 0; // This is need for preventing multiply sensor checkings or measurings at time
+
+uint8_t numProximityChannels;
+ProximitySensor_t * sens[numProximityChannels];
+
+uint8_t conversion( uint8_t _ADC ) /*ADC 8-bit, Vref 3.3V */ // TODO: change for 5V
 {
 	uint8_t Half_DIV;
     uint16_t Result;
@@ -55,12 +61,32 @@ void prepareProximitySensors()
 	// TODO: init adc
 }
 
-ProximitySensor_t * checkProximitySensors()
-{
-	// TODO: check if adc inputs are not equal zero. if equal - channel not exists
+void readAllProximitySensors() {
+	for (uint8_t ch; ch < numChannels; ch++)
+	{
+		if ((!block)&&(!sens[ch]->rawData.state)) {
+			checkProximitySensor(sens[ch]);
+		}
+	}
 }
 
-void readProximitySensors( ProximitySensor_t * )
+void checkProximitySensor(ProximitySensor_t * sensor)
 {
-	
+	currentMeasuringSensor= sensor;
+	block= 1;
+	adcSelectChannel(sensor->channel);
+	adcStart();
+	// TODO: check if adc input are not equal zero. if equal - sensor not exists
+}
+
+void proximityReadHandler() {
+	adcGetData(currentMeasuringSensor->rawData);
+	if (currentMeasuringSensor->rawData.value < 10)
+	{
+		currentMeasuringSensor->state= OFF;
+	}
+	else {
+		currentMeasuringSensor->state= ON;
+	}
+	block= 0;
 }

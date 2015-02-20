@@ -21,14 +21,15 @@ typedef enum {
 	} State_t;
 
 typedef struct {
+	uint8_t channel;
 	State_t state; // ON/OFF
-	uint8_t rawData;
+	adc_t rawData;
 	} ProximitySensor_t;
 
 void prepareProximitySensors();
-ProximitySensor_t * checkProximitySensors(); // search for connected IR-sensors, returns array of struct
-void readProximitySensors(ProximitySensor_t *); // read every existed channel and store to struct
+State_t checkProximitySensor(ProximitySensor_t *); // search for connected IR-sensors, returns array of struct
 uint8_t conversion( uint8_t ); /*ADC 8-bit, Vref 3.3V */
 uint8_t linearApprox( uint8_t );
-
+void proximityReadHandler(/* Use global var */);
+void readAllProximitySensors();
 #endif /* PROXIMITY_H_ */
