@@ -190,7 +190,7 @@ typedef struct {
 	vect_t m_min; // minimum magnetometer values, used for calibration
 } LSM303_t;
 
-regAddr translated_regs[];//dummy_reg_count + 1]; // index 0 not used // TODO: check this
+regAddr translated_regs[7]; // (dummy_reg_count + 1) // index 0 not used // TODO: check this
 
 uint8_t LSM303D_Init(LSM303_t *, deviceType, sa0State);
 deviceType LSM303D_GetDeviceType(LSM303_t *);
@@ -214,7 +214,7 @@ template <typename T> float heading(vector<T> from);
 template <typename Ta, typename Tb, typename To> static void vector_cross(const vector<Ta> *a, const vector<Tb> *b, vector<To> *out);
 template <typename Ta, typename Tb> static float vector_dot(const vector<Ta> *a, const vector<Tb> *b);
 */
-static void LSM303D_VectorNormalize(vect_float_t *a);
+void LSM303D_VectorNormalize(vect_float_t *a);
 
 int8_t LSM303D_TestReg(uint8_t address, regAddr reg);
 #endif	/* __LSM303D_H__ */

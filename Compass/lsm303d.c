@@ -2,8 +2,7 @@
 #include "../Communication.h"
 #include "LSM303D.h"
 #include <math.h>
-
-
+#include "User.h"
 
 LSM303_t * thisDevice;
 
@@ -350,10 +349,10 @@ void LSM303D_Heading(LSM303_t * device)
 
 void LSM303D_VectorNormalize(vect_float_t *a)
 {
-  float mag = sqrt(vector_dot(a, a)); // TODO: what's this?
-  a->X /= mag;
-  a->Y /= mag;
-  a->Z /= mag;
+  float scalar= hypo3(a->X, a->Y, a->Z);
+  a->X/= scalar;
+  a->Y/= scalar;
+  a->Z/= scalar;
 }
 
 int8_t LSM303D_TestReg(uint8_t address, regAddr reg)
@@ -369,7 +368,7 @@ int8_t LSM303D_TestReg(uint8_t address, regAddr reg)
 	{
 		return TEST_REG_ERROR;
 	}
-	
+	return 1;
 }
 
 deviceType LSM303D_GetDeviceType( LSM303_t * device)
